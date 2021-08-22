@@ -22,7 +22,7 @@ class Estacionamento(Base):
     endereco = relationship('Endereco')
     foto = relationship('Upload')
     valores_hora = relationship('ValorHora', back_populates='estacionamento')
-    horas_divergentes = relationship('Horario', back_populates='estacionamento')
+    horas_divergentes = relationship('HorarioDivergente', back_populates='estacionamento')
 
     def __eq__(self, other):
         if self is other:
