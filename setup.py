@@ -1,9 +1,8 @@
-# AVISO: Código temporário, depois será alterado para usar injeção de dependência
-
 import sqlalchemy
 from sqlalchemy.ext.compiler import compiles
 import sys
 
+from src.container import create_container
 from src.models.base import Base
 from src.models import *
 
@@ -16,13 +15,20 @@ def compile_binary_mysql(element, compiler, **kw):
         return compiler.visit_BLOB(element, **kw)
 
 
-if len(sys.argv) == 1:
-    print('USAGE: python setup.py DB_CONN_STRING')
-    exit(0)
+def main():
+    if len(sys.argv) == 1:
+        print('USAGE: python setup.py <CONFIG_PATH>')
+        exit(0)
 
-conn_string = sys.argv[1]
+    config_path = sys.argv[1]
 
-engine = sqlalchemy.create_engine(conn_string)
-Base.metadata.create_all(engine)
+    container = create_container(config_path)
+    db_engine = container.db_engine()
 
-print('Ok')
+    Base.metadata.create_all(db_engine.engine)
+
+    print('Ok')
+
+
+if __name__ == '__main__':
+    main()
