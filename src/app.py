@@ -1,5 +1,6 @@
 import flask
 from flask import Flask
+from flask_cors import CORS
 from flask_restful import Api
 from src.resources import resources
 from src.container import create_container
@@ -17,6 +18,8 @@ def create_app(config_filepath: str):
         api.add_resource(*resource)
 
     setup_db_connection(app, container.db_session_maker())
+
+    CORS(app, origins=app.config.get('CORS_ORIGIN'))
 
     return app
 
