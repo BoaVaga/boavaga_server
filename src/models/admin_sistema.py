@@ -8,7 +8,7 @@ class AdminSistema(Base):
 
     id = Column(SmallInteger(), primary_key=True, autoincrement=True, nullable=False)
     nome = Column(String(100), nullable=False)
-    email = Column(String(100), nullable=False)
+    email = Column(String(100), nullable=False, unique=True)
     senha = Column(LargeBinary(60), nullable=False)
 
     def __eq__(self, other):

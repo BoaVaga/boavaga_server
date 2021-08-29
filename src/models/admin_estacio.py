@@ -8,7 +8,7 @@ class AdminEstacio(Base):
     __tablename__ = 'admin_estacio'
 
     id = Column(SmallInteger(), primary_key=True, autoincrement=True)
-    email = Column(String(100), nullable=False)
+    email = Column(String(100), nullable=False, unique=True)
     senha = Column(LargeBinary(60), nullable=False)
     estacio_fk = Column(SmallInteger(), ForeignKey('estacionamento.id'), nullable=False)
 
