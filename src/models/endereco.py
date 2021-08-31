@@ -1,6 +1,6 @@
 from sqlalchemy import Column, SmallInteger, String, Enum
 
-from src.enums.estados_enum import EstadosEnum
+from src.enums import EstadosEnum
 from src.models.base import Base
 
 

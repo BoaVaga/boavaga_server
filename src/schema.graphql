@@ -1,0 +1,57 @@
+#directive @inherits(type: String!) on OBJECT
+directive @auth(requires: UserType) on FIELD_DEFINITION
+
+schema {
+    query: Query
+    mutation: Mutation
+}
+
+enum UserType {
+    SISTEMA,
+    ESTACIONAMENTO
+}
+
+type BaseResult {
+    success: Boolean!,
+    error: String
+}
+
+type AdminSistema {
+    id: ID!,
+    nome: String!,
+    email: String!
+}
+
+type AdminEstacio {
+    id: ID!,
+    email: String!
+}
+
+#type BaseAdmSistemaRes @inherits(type: "BaseResult") {
+#    admin_sistema: AdmSistema
+#}
+
+#type AdmSistemaLoginRes @inherits(type: "BaseAdmSistemaRes") {
+#    token: String
+#}
+
+type BaseAdminSistemaRes {
+    success: Boolean!,
+    error: String,
+    admin_sistema: AdminSistema
+}
+
+type LoginRes {
+    success: Boolean!,
+    error: String,
+    token: String
+}
+
+type Mutation {
+    create_admin_sistema(nome: String!, email: String!, senha: String!): BaseAdminSistemaRes! @auth(requires: SISTEMA)
+    login(email: String!, senha: String!, tipo: UserType!): LoginRes!
+}
+
+type Query {
+    test(a: String): String!
+}
