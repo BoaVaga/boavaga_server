@@ -38,7 +38,7 @@ type AdminEstacio {
 type BaseAdminSistemaRes {
     success: Boolean!,
     error: String,
-    admin_sistema: AdminSistema
+    adminSistema: AdminSistema
 }
 
 type LoginRes {
@@ -48,7 +48,7 @@ type LoginRes {
 }
 
 type Mutation {
-    create_admin_sistema(nome: String!, email: String!, senha: String!): BaseAdminSistemaRes! @auth(requires: SISTEMA)
+    createAdminSistema(nome: String!, email: String!, senha: String!): BaseAdminSistemaRes! # @auth(requires: SISTEMA)
     login(email: String!, senha: String!, tipo: UserType!): LoginRes!
 }
 

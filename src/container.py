@@ -1,3 +1,5 @@
+from typing import Optional, List
+
 from dependency_injector import providers, containers
 
 from src.services import DbEngine, DbSessionMaker, Crypto, Cached
@@ -29,12 +31,16 @@ class Container(containers.DeclarativeContainer):
     )
 
 
-def create_container(config_filepath: str):
-    from src import services, api, directives
+def create_container(config_filepath: str, extra_modules: Optional[List] = None):
+    from src import services, api, directives, repo
 
     container = Container()
     container.config.from_ini(config_filepath)
 
-    container.wire(modules=[services, api, directives])
+    modules = [services, api, directives, repo]
+    if extra_modules is not None:
+        modules.extend(extra_modules)
+
+    container.wire(modules=modules)
 
     return container

@@ -2,7 +2,7 @@ import pathlib
 from typing import Iterable
 
 import flask
-from ariadne import graphql_sync, load_schema_from_path, make_executable_schema, snake_case_fallback_resolvers, \
+from ariadne import graphql_sync, load_schema_from_path, make_executable_schema, fallback_resolvers, \
     ObjectType
 from ariadne.constants import PLAYGROUND_HTML
 from flask import Flask
@@ -10,16 +10,16 @@ from flask_cors import CORS
 
 from src.api import APIS
 from src.api.base import BaseApi
-from src.container import create_container
+from src.container import create_container, Container
 from src.directives import DIRECTIVES
+from src.repo import RepoContainer
 from src.services import DbSessionMaker
 
 
-def create_app(config_filepath: str):
-    container = create_container(config_filepath)
-
+def create_app(container: Container, repo_container: RepoContainer):
     app = Flask(__name__)
     app.container = container
+    app.repo_container = repo_container
 
     graphql_schema_path = pathlib.Path(__file__).parent / 'schema.graphql'
     setup_graphql_server(app, str(graphql_schema_path), APIS, DIRECTIVES)
@@ -54,7 +54,7 @@ def setup_graphql_server(app: Flask, schema_path: str, api_list: Iterable[type],
             mutation.set_field(name, resolver)
 
     type_defs = load_schema_from_path(schema_path)
-    schema = make_executable_schema(type_defs, query, mutation, snake_case_fallback_resolvers,
+    schema = make_executable_schema(type_defs, query, mutation, fallback_resolvers,
                                     directives=directive_dict)
 
     @app.route('/graphql', methods=['GET'])
