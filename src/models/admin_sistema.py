@@ -3,7 +3,7 @@ from sqlalchemy import Column, SmallInteger, String, LargeBinary
 from src.models.base import Base
 
 
-class AdminSistema(Base):
+class AdminSistema(Base):  # IUser
     __tablename__ = 'admin_sistema'
 
     id = Column(SmallInteger(), primary_key=True, autoincrement=True, nullable=False)

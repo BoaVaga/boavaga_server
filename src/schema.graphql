@@ -1,5 +1,4 @@
 #directive @inherits(type: String!) on OBJECT
-directive @auth(requires: UserType) on FIELD_DEFINITION
 
 schema {
     query: Query
@@ -48,7 +47,7 @@ type LoginRes {
 }
 
 type Mutation {
-    createAdminSistema(nome: String!, email: String!, senha: String!): BaseAdminSistemaRes! # @auth(requires: SISTEMA)
+    createAdminSistema(nome: String!, email: String!, senha: String!): BaseAdminSistemaRes!
     login(email: String!, senha: String!, tipo: UserType!): LoginRes!
 }
 

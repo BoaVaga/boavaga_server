@@ -51,8 +51,6 @@ class TestAuthApi(unittest.TestCase):
             (UserTypeNode('ESTACIONAMENTO'), 'jorge@email.com'),
         ]
 
-        all_tokens = set()
-
         for i in range(len(requests)):
             tipo, email = requests[i]
 

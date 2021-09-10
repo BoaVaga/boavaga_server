@@ -32,12 +32,12 @@ class Container(containers.DeclarativeContainer):
 
 
 def create_container(config_filepath: str, extra_modules: Optional[List] = None):
-    from src import services, api, directives, repo
+    from src import services, api, repo
 
     container = Container()
     container.config.from_ini(config_filepath)
 
-    modules = [services, api, directives, repo]
+    modules = [services, api, repo]
     if extra_modules is not None:
         modules.extend(extra_modules)
 

@@ -4,7 +4,7 @@ from sqlalchemy.orm import relationship
 from src.models.base import Base
 
 
-class AdminEstacio(Base):
+class AdminEstacio(Base):  # IUser
     __tablename__ = 'admin_estacio'
 
     id = Column(SmallInteger(), primary_key=True, autoincrement=True)

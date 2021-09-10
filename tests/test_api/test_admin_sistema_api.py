@@ -1,6 +1,6 @@
 import pathlib
 import unittest
-from unittest.mock import Mock
+from unittest.mock import Mock, ANY
 
 from dependency_injector.providers import Singleton
 from sgqlc.operation import Operation
@@ -10,6 +10,8 @@ from src.app import create_app
 from src.container import create_container
 from src.models import AdminSistema
 from src.repo.repo_container import create_repo_container
+from tests.utils import get_adm_sistema_login, make_general_db_setup, make_engine, make_savepoint, general_db_teardown, \
+    make_mocked_cached_provider
 
 
 class AdminSistemaNode(Type):
@@ -35,18 +37,46 @@ class TestAdminSistemaApi(unittest.TestCase):
         cls.container = create_container(config_path)
         cls.repo_container = create_repo_container(config_path)
 
+        conn_string = str(cls.container.config.get('db')['conn_string'])
+        cls.engine = make_engine(conn_string)
+
+    @classmethod
+    def tearDownClass(cls) -> None:
+        cls.engine.dispose()
+
     def setUp(self) -> None:
+        self.container.cached.override(make_mocked_cached_provider(self.container))
+
+        self.conn, self.outer_trans, self.session = make_general_db_setup(self.engine)
+        self.user, self.user_sess, self.login_success, self.login_token =\
+            get_adm_sistema_login(self.repo_container, self.container.crypto(), self.session)
+
+        make_savepoint(self.conn, self.session)
+
         self.repo_container.admin_sistema_repo.override(Singleton(Mock))
         self.repo = self.repo_container.admin_sistema_repo()
 
         self.app = create_app(self.container, self.repo_container)
         self.client = self.app.test_client(use_cookies=False)
 
+        self.client.environ_base['HTTP_AUTHORIZATION'] = f'Bearer {self.login_token}'
+
+    def tearDown(self) -> None:
+        general_db_teardown(self.conn, self.outer_trans, self.session)
+
+        self.container.cached().clear_all()
+
+    def test_login(self):
+        self.assertEqual(True, self.login_success, f'Success should be True. Error: {self.login_token}')
+        self.assertIsNotNone(self.login_token, 'Login token should not be null')
+
     def test_create_ok(self):
-        self.repo.create_admin.return_value = (True, AdminSistema(id=123, nome='Pedrinho', email='pedrinho@un.com'))
+        nome, email, senha = 'Pedrinho', 'pedrinho@un.com', 'pedrao123'
+
+        self.repo.create_admin.return_value = (True, AdminSistema(id=123, nome=nome, email=email))
 
         mutation = Operation(Mutation)
-        mutation.create_admin_sistema(nome='Pedrinho', email='pedrinho@un.com', senha='pedrao123')
+        mutation.create_admin_sistema(nome=nome, email=email, senha=senha)
 
         response = self.client.post('/graphql', json={'query': str(mutation)})
         data = self._check_response(response, 'createAdminSistema')
@@ -57,11 +87,13 @@ class TestAdminSistemaApi(unittest.TestCase):
 
         self.assertIsNotNone(admin, 'Admin should not be null')
         self.assertEqual('123', admin['id'], 'IDs should match')
-        self.assertEqual('Pedrinho', admin['nome'], 'Names should match')
-        self.assertEqual('pedrinho@un.com', admin['email'], 'Emails should match')
+        self.assertEqual(nome, admin['nome'], 'Names should match')
+        self.assertEqual(email, admin['email'], 'Emails should match')
+
+        self.repo.create_admin.assert_called_once_with(self.user_sess, ANY, nome, email, senha)
 
     def test_create_errors(self):
-        for error in ['email_ja_cadastrado', 'Random exception']:
+        for error in ['email_ja_cadastrado', 'sem_permissao', 'Random exception']:
             self.repo.create_admin.return_value = (False, error)
 
             mutation = Operation(Mutation)

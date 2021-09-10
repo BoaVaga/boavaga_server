@@ -2,7 +2,8 @@ import pathlib
 import unittest
 
 from src.container import create_container
-from src.models import AdminSistema
+from src.enums import UserType
+from src.models import AdminSistema, UserSession
 from src.repo import AdminSistemaRepo
 from src.services import Crypto
 from tests.factory import set_session, AdminSistemaFactory
@@ -39,6 +40,8 @@ class TestAuthApi(unittest.TestCase):
         self.container.cached.override(make_mocked_cached_provider(self.container))
         self.cached: MockedCached = self.container.cached()
 
+        self.valid_user_sess = UserSession(UserType.SISTEMA, self.admin_sis[0].id)
+
         self.repo = AdminSistemaRepo()
 
     def tearDown(self) -> None:
@@ -61,7 +64,7 @@ class TestAuthApi(unittest.TestCase):
         for i in range(len(requests)):
             nome, email, senha = requests[i]
 
-            success, error_or_admin = self.repo.create_admin(self.session, nome, email, senha)
+            success, error_or_admin = self.repo.create_admin(self.valid_user_sess, self.session, nome, email, senha)
             self.assertEqual(True, success, f'Success should be True on {i}. Error: {error_or_admin}')
             self.assertIsNotNone(error_or_admin, f'Admin should not be null on {i}')
 
@@ -79,9 +82,19 @@ class TestAuthApi(unittest.TestCase):
         for i in range(len(requests)):
             nome, email, senha = requests[i]
 
-            success, error = self.repo.create_admin(self.session, nome, email, senha)
+            success, error = self.repo.create_admin(self.valid_user_sess, self.session, nome, email, senha)
 
             self.assertEqual('email_ja_cadastrado', error, f'Error should be "email_ja_cadastrado" on {i}')
+            self.assertEqual(False, success, f'Success should be False on {i}')
+
+    def test_create_invalid_permission(self):
+        nome, email, senha = 'Jorge', 'jorge12@email.com', 'matheus12'
+
+        sessions = [UserSession(UserType.ESTACIONAMENTO, 1), None]
+        for i in range(len(sessions)):
+            success, error = self.repo.create_admin(sessions[i], self.session, email, nome, senha)
+
+            self.assertEqual('sem_permissao', error, f'Error should be "sem_permissao" on {i}')
             self.assertEqual(False, success, f'Success should be False on {i}')
 
     def _check_response(self, response, i):

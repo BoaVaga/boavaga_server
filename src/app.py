@@ -11,7 +11,6 @@ from flask_cors import CORS
 from src.api import APIS
 from src.api.base import BaseApi
 from src.container import create_container, Container
-from src.directives import DIRECTIVES
 from src.repo import RepoContainer
 from src.services import DbSessionMaker
 
@@ -22,7 +21,7 @@ def create_app(container: Container, repo_container: RepoContainer):
     app.repo_container = repo_container
 
     graphql_schema_path = pathlib.Path(__file__).parent / 'schema.graphql'
-    setup_graphql_server(app, str(graphql_schema_path), APIS, DIRECTIVES)
+    setup_graphql_server(app, str(graphql_schema_path), APIS, {})
 
     setup_db_connection(app, container.db_session_maker())
 
