@@ -1,3 +1,5 @@
+from secrets import token_hex
+
 from bcrypt import gensalt, hashpw, checkpw
 
 
@@ -18,6 +20,10 @@ class Crypto:
             return self._dev_hash(password) == hashed
         else:
             return checkpw(password, hashed)
+
+    @staticmethod
+    def random_hex_string(size: int) -> str:
+        return token_hex(size)
 
     @staticmethod
     def _dev_hash(password: bytes) -> bytes:

@@ -1,5 +1,8 @@
 import pathlib
 import unittest
+from unittest.mock import MagicMock
+
+from dependency_injector import providers
 
 from src.container import create_container
 from src.enums import UserType
@@ -8,7 +11,7 @@ from src.repo import AuthRepo
 from src.services import Crypto
 from tests.factory import set_session, AdminSistemaFactory, AdminEstacioFactory
 from tests.utils import make_general_db_setup, general_db_teardown, MockedCached, \
-    make_mocked_cached_provider, make_engine, make_savepoint
+    make_mocked_cached_provider, make_engine, make_savepoint, singleton_provider
 
 
 class TestAuthApi(unittest.TestCase):
@@ -39,7 +42,11 @@ class TestAuthApi(unittest.TestCase):
 
         make_savepoint(self.conn, self.session)
 
+        self.crypto = self.container.crypto()
+
         self.container.cached.override(make_mocked_cached_provider(self.container))
+        self.container.crypto.override(singleton_provider(self.crypto))
+
         self.cached: MockedCached = self.container.cached()
 
         self.repo = AuthRepo()
@@ -106,6 +113,30 @@ class TestAuthApi(unittest.TestCase):
 
             self.assertEqual('email_nao_encontrado', error, f'Error should be "email_nao_encontrado" on {i}')
             self.assertEqual(False, success, f'Success should be False on {i}')
+
+    def test_login_token_collision(self):
+        token_char = ord('1')
+
+        def fake_random_hex_string(size: int) -> str:
+            nonlocal token_char
+
+            s = chr(token_char) * (size * 2)
+            token_char += 1
+
+            return s
+
+        self.crypto.random_hex_string = MagicMock()
+        self.crypto.random_hex_string.side_effect = fake_random_hex_string
+
+        success, token = self.repo.login(self.session, 'jorge@email.com', 'senha123', UserType.SISTEMA)
+        self.assertEqual(True, success, f'Success should be True on 0. Error: {token}')
+        self.assertEqual('1' * 32, token, 'Unexpected token on 0.')
+
+        token_char = ord('1')
+
+        success, token = self.repo.login(self.session, 'jorge@email.com', 'senha123', UserType.SISTEMA)
+        self.assertEqual(True, success, f'Success should be True on 1. Error: {token}')
+        self.assertNotEqual('1' * 32, token, 'Token should be different')
 
     def _check_response(self, response, i):
         self.assertEqual(200, response.status_code, 'Should return a 200 OK code')
