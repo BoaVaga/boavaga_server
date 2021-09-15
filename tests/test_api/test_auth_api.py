@@ -5,25 +5,11 @@ from unittest.mock import Mock
 
 from dependency_injector.providers import Singleton
 from sgqlc.operation import Operation
-from sgqlc.types import String, Type, Boolean, Field, Enum
 
 from src.app import create_app
 from src.container import create_container
 from src.repo.repo_container import create_repo_container
-
-
-class UserTypeNode(Enum):
-    __choices__ = ('SISTEMA', 'ESTACIONAMENTO')
-
-
-class LoginResNode(Type):
-    success = Boolean
-    error = String
-    token = String
-
-
-class Mutation(Type):
-    login = Field(LoginResNode, args={'tipo': UserTypeNode, 'email': String, 'senha': String})
+from tests.test_api.nodes import Mutation, UserTypeNode
 
 
 class TestAuthApi(unittest.TestCase):

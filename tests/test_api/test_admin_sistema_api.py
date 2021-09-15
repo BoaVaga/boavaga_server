@@ -4,30 +4,14 @@ from unittest.mock import Mock, ANY
 
 from dependency_injector.providers import Singleton
 from sgqlc.operation import Operation
-from sgqlc.types import String, Type, Boolean, ID, Field
 
 from src.app import create_app
 from src.container import create_container
 from src.models import AdminSistema
 from src.repo.repo_container import create_repo_container
+from tests.test_api.nodes import Mutation
 from tests.utils import get_adm_sistema_login, make_general_db_setup, make_engine, make_savepoint, general_db_teardown, \
     make_mocked_cached_provider
-
-
-class AdminSistemaNode(Type):
-    id = ID
-    nome = String
-    email = String
-
-
-class CreateResNode(Type):
-    success = Boolean
-    error = String
-    admin_sistema = AdminSistemaNode
-
-
-class Mutation(Type):
-    create_admin_sistema = Field(CreateResNode, args={'nome': String, 'email': String, 'senha': String})
 
 
 class TestAdminSistemaApi(unittest.TestCase):
@@ -66,7 +50,7 @@ class TestAdminSistemaApi(unittest.TestCase):
 
         self.container.cached().clear_all()
 
-    def test_login(self):
+    def test_setup(self):
         self.assertEqual(True, self.login_success, f'Success should be True. Error: {self.login_token}')
         self.assertIsNotNone(self.login_token, 'Login token should not be null')
 

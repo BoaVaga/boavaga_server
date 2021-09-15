@@ -1,6 +1,6 @@
 from src.enums import UserType
 from src.models import UserSession
-from tests.factory import AdminSistemaFactory, set_session
+from tests.factories import AdminSistemaFactory, set_session
 
 
 def get_adm_sistema_login(repo_container, crypto, session):

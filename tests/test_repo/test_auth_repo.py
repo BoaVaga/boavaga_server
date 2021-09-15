@@ -2,19 +2,17 @@ import pathlib
 import unittest
 from unittest.mock import MagicMock
 
-from dependency_injector import providers
-
 from src.container import create_container
 from src.enums import UserType
 from src.models import AdminSistema, AdminEstacio
 from src.repo import AuthRepo
 from src.services import Crypto
-from tests.factory import set_session, AdminSistemaFactory, AdminEstacioFactory
+from tests.factories import set_session, AdminSistemaFactory, AdminEstacioFactory
 from tests.utils import make_general_db_setup, general_db_teardown, MockedCached, \
     make_mocked_cached_provider, make_engine, make_savepoint, singleton_provider
 
 
-class TestAuthApi(unittest.TestCase):
+class TestAuthRepo(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         config_path = str(pathlib.Path(__file__).parents[2] / 'test.ini')
