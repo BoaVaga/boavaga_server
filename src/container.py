@@ -2,7 +2,17 @@ from typing import Optional, List
 
 from dependency_injector import providers, containers
 
-from src.services import DbEngine, DbSessionMaker, Crypto, Cached
+from src.services import DbEngine, DbSessionMaker, Crypto, Cached, LocalUploader, ImageProcessor
+
+
+def _choose_uploader(uploader_type: str, config: dict):
+    if uploader_type.upper() == 'LOCAL':
+        if 'base_path' not in config:
+            raise KeyError('Uploader configuration does not contain "base_path"')
+
+        return LocalUploader(config['base_path'])
+
+    raise AttributeError(f'Unknown uploader type: {uploader_type}')
 
 
 class Container(containers.DeclarativeContainer):
@@ -28,6 +38,17 @@ class Container(containers.DeclarativeContainer):
         Cached,
         host=config.memcached.host,
         port=config.memcached.port.as_int()
+    )
+
+    uploader = providers.Singleton(
+        _choose_uploader,
+        uploader_type=config.uploader.type,
+        config=config.uploader
+    )
+
+    image_processor = providers.Singleton(
+        ImageProcessor,
+        default_img_format=config.image_processor.def_img_format
     )
 
 

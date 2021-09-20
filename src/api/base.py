@@ -3,7 +3,7 @@ from typing import Dict, Callable, Optional
 import flask
 from sqlalchemy.orm import Session
 
-from src.models import UserSession, SimpleUserSession
+from src.classes import UserSession, SimpleUserSession
 from src.services import Cached
 
 

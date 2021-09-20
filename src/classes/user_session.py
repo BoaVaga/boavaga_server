@@ -2,7 +2,7 @@ from typing import Optional
 
 from src.enums import UserType
 from src.models import AdminSistema, AdminEstacio
-from src.models.i_user import IUser
+from src.classes.i_user import IUser
 
 
 class SimpleUserSession:

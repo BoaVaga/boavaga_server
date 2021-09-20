@@ -6,7 +6,8 @@ from sqlalchemy.orm import Session
 
 from src.container import Container
 from src.enums import UserType
-from src.models import AdminSistema, UserSession
+from src.models import AdminSistema
+from src.classes import UserSession
 from src.services import Crypto, Cached
 
 

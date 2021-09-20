@@ -3,7 +3,8 @@ import unittest
 
 from src.container import create_container
 from src.enums import UserType
-from src.models import AdminSistema, UserSession
+from src.models import AdminSistema
+from src.classes import UserSession
 from src.repo import AdminSistemaRepo
 from src.services import Crypto
 from tests.factories import set_session, AdminSistemaFactory

@@ -1,16 +1,17 @@
+import json
 import pathlib
 from typing import Iterable
 
 import flask
 from ariadne import graphql_sync, load_schema_from_path, make_executable_schema, fallback_resolvers, \
-    ObjectType
+    ObjectType, upload_scalar, combine_multipart_data
 from ariadne.constants import PLAYGROUND_HTML
 from flask import Flask
 from flask_cors import CORS
 
 from src.api import APIS
 from src.api.base import BaseApi
-from src.container import create_container, Container
+from src.container import Container
 from src.repo import RepoContainer
 from src.services import DbSessionMaker
 
@@ -53,7 +54,7 @@ def setup_graphql_server(app: Flask, schema_path: str, api_list: Iterable[type],
             mutation.set_field(name, resolver)
 
     type_defs = load_schema_from_path(schema_path)
-    schema = make_executable_schema(type_defs, query, mutation, fallback_resolvers,
+    schema = make_executable_schema(type_defs, query, mutation, fallback_resolvers, upload_scalar,
                                     directives=directive_dict)
 
     @app.route('/graphql', methods=['GET'])
@@ -62,11 +63,18 @@ def setup_graphql_server(app: Flask, schema_path: str, api_list: Iterable[type],
 
     @app.route('/graphql', methods=['POST'])
     def graphql_server():
-        if flask.request.is_json:
+        if flask.request.content_type.startswith('multipart/form-data'):
+            data = combine_multipart_data(
+                json.loads(flask.request.form.get("operations")),
+                json.loads(flask.request.form.get("map")),
+                dict(flask.request.files)
+            )
+        elif flask.request.is_json:
             data = flask.request.get_json()
-            success, result = graphql_sync(schema, data, context_value=flask.request, debug=app.debug)
-
-            status_code = 200 if success else 400
-            return flask.jsonify(result), status_code
         else:
             return '', 400
+
+        success, result = graphql_sync(schema, data, context_value=flask.request, debug=app.debug)
+
+        status_code = 200 if success else 400
+        return flask.jsonify(result), status_code

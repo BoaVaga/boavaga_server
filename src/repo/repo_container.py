@@ -2,6 +2,7 @@ from typing import Optional, List
 
 from dependency_injector import containers, providers
 
+from src.repo.pedido_cadastro_repo import PedidoCadastroRepo
 from src.repo.admin_sistema_repo import AdminSistemaRepo
 from src.repo.auth_repo import AuthRepo
 
@@ -11,6 +12,7 @@ class RepoContainer(containers.DeclarativeContainer):
 
     auth_repo = providers.Factory(AuthRepo)
     admin_sistema_repo = providers.Factory(AdminSistemaRepo)
+    pedido_cadastro_repo = providers.Factory(PedidoCadastroRepo)
 
 
 def create_repo_container(config_filepath: str, extra_modules: Optional[List] = None):

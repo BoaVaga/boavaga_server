@@ -1,1 +1,2 @@
-from tests.factories.factory import AdminSistemaFactory, AdminEstacioFactory, set_session, teardown_factories
+from tests.factories.factory import AdminSistemaFactory, AdminEstacioFactory, BaseEnderecoFactory, UploadFactory, \
+    set_session, teardown_factories

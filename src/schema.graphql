@@ -5,9 +5,15 @@ schema {
     mutation: Mutation
 }
 
+scalar Upload
+
 enum UserType {
     SISTEMA,
     ESTACIONAMENTO
+}
+
+enum EstadosEnum {
+    AC, AL, AP, AM, BA, CE, DF, ES, GO, MA, MT, MS, MG, PA, PB, PR, PE, PI, RJ, RN, RS, RO, RR, SC, SP, SE, TO
 }
 
 type BaseResult {
@@ -26,13 +32,32 @@ type AdminEstacio {
     email: String!
 }
 
-#type BaseAdmSistemaRes @inherits(type: "BaseResult") {
-#    admin_sistema: AdmSistema
-#}
+type PedidoCadastro {
+    id: ID!,
+    nome: String!,
+    telefone: String!,
+    endereco: Endereco!,
+    foto: String!,
+    adminEstacio: AdminEstacio
+}
 
-#type AdmSistemaLoginRes @inherits(type: "BaseAdmSistemaRes") {
-#    token: String
-#}
+type Endereco {
+    logradouro: String!,
+    estado: EstadosEnum!,
+    cidade: String!,
+    bairro: String!,
+    numero: String!,
+    cep: String!
+}
+
+input EnderecoInput {
+    logradouro: String!,
+    estado: EstadosEnum!,
+    cidade: String!,
+    bairro: String!,
+    numero: String!,
+    cep: String!
+}
 
 type BaseAdminSistemaRes {
     success: Boolean!,
@@ -46,9 +71,16 @@ type LoginRes {
     token: String
 }
 
+type PedidoCadastroRes {
+    success: Boolean!,
+    error: String,
+    pedidoCadastro: PedidoCadastro
+}
+
 type Mutation {
     createAdminSistema(nome: String!, email: String!, senha: String!): BaseAdminSistemaRes!
     login(email: String!, senha: String!, tipo: UserType!): LoginRes!
+    createPedidoCadastro(nome: String!, telefone: String!, endereco: EnderecoInput!, foto: Upload!): PedidoCadastroRes!
 }
 
 type Query {
