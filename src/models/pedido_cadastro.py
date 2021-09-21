@@ -8,7 +8,7 @@ class PedidoCadastro(Base):
     __tablename__ = 'pedido_cadastro'
 
     id = Column(SmallInteger(), primary_key=True, nullable=False, autoincrement=True)
-    nome = Column(String(30), nullable=False)
+    nome = Column(String(100), nullable=False)
     telefone = Column(String(20), nullable=False)
     endereco_fk = Column(SmallInteger(), ForeignKey('endereco.id'), nullable=False)
     foto_fk = Column(SmallInteger(), ForeignKey('upload.id'), nullable=False)

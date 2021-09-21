@@ -8,7 +8,7 @@ class Estacionamento(Base):
     __tablename__ = 'estacionamento'
 
     id = Column(SmallInteger(), primary_key=True, autoincrement=True, nullable=False)
-    nome = Column(String(30), nullable=False)
+    nome = Column(String(100), nullable=False)
     esta_suspenso = Column(Boolean(), nullable=False)
     esta_aberto = Column(Boolean(), nullable=False)
     descricao = Column(Text(), nullable=True)
