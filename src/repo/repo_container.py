@@ -12,7 +12,11 @@ class RepoContainer(containers.DeclarativeContainer):
 
     auth_repo = providers.Factory(AuthRepo)
     admin_sistema_repo = providers.Factory(AdminSistemaRepo)
-    pedido_cadastro_repo = providers.Factory(PedidoCadastroRepo)
+    pedido_cadastro_repo = providers.Factory(
+        PedidoCadastroRepo,
+        width_foto=config.pedido_cadastro.width_foto.as_int(),
+        height_foto=config.pedido_cadastro.height_foto.as_int()
+    )
 
 
 def create_repo_container(config_filepath: str, extra_modules: Optional[List] = None):

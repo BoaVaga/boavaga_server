@@ -3,6 +3,7 @@ from typing import Tuple, Union
 
 from src.classes import FileStream
 from src.enums import UploadStatus
+from src.models import Upload
 from src.services.uploader.uploader import Uploader
 
 
@@ -10,7 +11,7 @@ class LocalUploader(Uploader):
     def __init__(self, base_path: str):
         self.base_path = Path(base_path)
 
-    def upload(self, fstream: FileStream, sub_group: str, name: str) -> Tuple[bool, Union[str, UploadStatus]]:
+    def upload(self, fstream: FileStream, sub_group: str, name: str) -> Tuple[bool, Union[str, Upload]]:
         if fstream is None:
             raise AttributeError('fstream can not be None')
         if not sub_group:
@@ -24,7 +25,7 @@ class LocalUploader(Uploader):
             with open(final_path, mode='wb') as f:
                 f.write(fstream.read())
 
-            return True, UploadStatus.CONCLUIDO
+            return True, Upload(nome_arquivo=name, sub_dir=sub_group, status=UploadStatus.CONCLUIDO)
         except IOError:
             return False, 'write_file_error'
 

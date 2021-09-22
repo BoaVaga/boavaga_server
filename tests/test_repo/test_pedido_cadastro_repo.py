@@ -46,7 +46,8 @@ class TestPedidoCadastroRepo(unittest.TestCase):
         self.image_processor = Mock()
         self.container.image_processor.override(singleton_provider(self.image_processor))
 
-        self.repo = PedidoCadastroRepo()
+        cfg = self.container.config.get('pedido_cadastro')
+        self.repo = PedidoCadastroRepo(int(cfg['width_foto']), int(cfg['height_foto']))
 
         self.upload = UploadFactory(sub_dir='foto_estacio', status=UploadStatus.CONCLUIDO)
 
@@ -104,7 +105,7 @@ class TestPedidoCadastroRepo(unittest.TestCase):
             self.assertEqual(arg.endereco, obj.endereco, f'Enderecos should match on {i}')
             self.assertEqual(ret.user, obj.admin_estacio, f'Should set the admin estacio on {i}')
 
-            self.image_processor.compress.assert_called_once_with(ret.img_proc_call)
+            self.image_processor.compress.assert_called_once_with(ret.img_proc_call, 100, 100)
             self.uploader.upload.assert_called_once_with(ret.upload_call, 'foto_estacio', ANY)
 
             self.assertEqual(ret.foto, obj.foto, f'Foto should be the upload on on {i}')
@@ -172,7 +173,7 @@ class TestPedidoCadastroRepo(unittest.TestCase):
         self.assertEqual('foto_formato_invalido', error, 'Error should be "foto_formato_invalido"')
 
         self.uploader.upload.assert_not_called()
-        self.image_processor.compress.assert_called_once_with(self.fstream)
+        self.image_processor.compress.assert_called_once_with(self.fstream, 100, 100)
 
     def test_create_error_upload(self):
         self.uploader.upload.side_effect = Exception('Erro aleatorio')
@@ -183,7 +184,7 @@ class TestPedidoCadastroRepo(unittest.TestCase):
         self.assertEqual(False, success, 'Success should be False')
         self.assertEqual('upload_error', error, 'Error should be "upload_error"')
 
-        self.image_processor.compress.assert_called_once_with(self.fstream)
+        self.image_processor.compress.assert_called_once_with(self.fstream, 100, 100)
         self.uploader.upload.assert_called_once_with(self.ret_fstream, 'foto_estacio', ANY)
 
         c = self.session.query(PedidoCadastro).count()

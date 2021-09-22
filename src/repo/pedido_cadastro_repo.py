@@ -1,3 +1,4 @@
+import logging
 from typing import Tuple, Union
 from uuid import uuid4
 
@@ -24,10 +25,18 @@ class PedidoCadastroRepo:
     LIMITE_PEDIDO_ERRO = 'limite_pedido_atingido'
 
     @inject
-    def __init__(self, uploader: Uploader = Provide[Container.uploader],
-                 image_processor: ImageProcessor = Provide[Container.image_processor]):
+    def __init__(
+            self,
+            width_foto: int,
+            height_foto: int,
+            uploader: Uploader = Provide[Container.uploader],
+            image_processor: ImageProcessor = Provide[Container.image_processor]
+    ):
         self.uploader = uploader
         self.image_processor = image_processor
+
+        self.width_foto = width_foto
+        self.height_foto = height_foto
 
     def create(self, user_sess: UserSession, sess: Session, nome: str, telefone: str,
                endereco: Endereco, foto: FileStream) -> Tuple[bool, Union[str, PedidoCadastro]]:
@@ -49,13 +58,14 @@ class PedidoCadastroRepo:
             return False, self.TEL_SEM_COD_INTER
 
         try:
-            ret = self.image_processor.compress(foto)
+            ret = self.image_processor.compress(foto, self.width_foto, self.height_foto)
         except AttributeError:
             return False, self.FOTO_FORMATO_INVALIDO
 
         try:
             ok, upload = self.uploader.upload(ret, self.UPLOAD_GROUP, str(uuid4()))
         except Exception as ex:
+            logging.getLogger(__name__).error(f'create(): Upload error.', exc_info=ex)
             return False, self.ERRO_UPLOAD
 
         pedido = PedidoCadastro(nome=nome, telefone=telefone, endereco=endereco, foto=upload,
