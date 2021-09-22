@@ -20,9 +20,8 @@ class AuthApi(BaseApi):
         super().__init__(queries, mutations)
 
     @convert_kwargs_to_snake_case
-    def login_resolver(self, *_, email: str, senha: str, tipo: str):
+    def login_resolver(self, *_, email: str, senha: str, tipo: UserType):
         sess: Session = flask.g.session
-        tipo = UserType[tipo]
 
         success, error_or_token = self.auth_repo.login(sess, email, senha, tipo)
         if success:

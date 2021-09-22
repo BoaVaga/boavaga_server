@@ -12,7 +12,7 @@ from flask_cors import CORS
 from src.api import APIS
 from src.api.base import BaseApi
 from src.container import Container
-from src.enums import EstadosEnum
+from src.enums import GRAPHQL_SCHEMA_ENUMS
 from src.repo import RepoContainer
 from src.services import DbSessionMaker
 
@@ -54,10 +54,10 @@ def setup_graphql_server(app: Flask, schema_path: str, api_list: Iterable[type],
         for name, resolver in api.mutations.items():
             mutation.set_field(name, resolver)
 
-    estados_enum = EnumType('EstadosEnum', EstadosEnum)
+    enum_types = [EnumType(x.__name__, x) for x in GRAPHQL_SCHEMA_ENUMS]
 
     type_defs = load_schema_from_path(schema_path)
-    schema = make_executable_schema(type_defs, query, mutation, fallback_resolvers, upload_scalar, estados_enum,
+    schema = make_executable_schema(type_defs, query, mutation, fallback_resolvers, upload_scalar, *enum_types,
                                     directives=directive_dict)
 
     @app.route('/graphql', methods=['GET'])
