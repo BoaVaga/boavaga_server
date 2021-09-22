@@ -39,7 +39,7 @@ def setup_db_connection(app: Flask, session_maker: DbSessionMaker):
 
     @app.teardown_appcontext
     def shutdown_session(response_or_exc):
-        flask.g.session.commit()
+        flask.g.session.rollback()
         flask.g.session.close()
 
 
