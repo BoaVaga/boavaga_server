@@ -25,3 +25,6 @@ class Upload(Base):
                 self.nome_arquivo == other.nome_arquivo and
                 self.sub_dir == other.sub_dir and
                 self.status == other.status)
+
+    def __repr__(self):
+        return f'{self.sub_dir}/{self.nome_arquivo}'

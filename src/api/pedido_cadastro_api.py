@@ -31,8 +31,16 @@ class PedidoCadastroApi(BaseApi):
         sess: Session = flask.g.session
         user_sess = self.get_user_session(sess, self.cached, info)
 
-        end = Endereco(logradouro=endereco['logradouro'], estado=endereco['estado'], cep=endereco['cep'],
-                       cidade=endereco['cidade'], bairro=endereco['bairro'], numero=endereco['numero'])
+        endereco = {k: v.strip() if isinstance(v, str) else v for k, v in endereco.items()}
+
+        end = Endereco.from_dict(endereco)
+        val_res = end.validate()
+
+        if val_res is not None:
+            return {
+                'success': False,
+                'error': val_res
+            }
 
         fstream = FlaskFileStream(foto)
         success, error_or_pedido = self.pedido_cad_repo.create(user_sess, sess, nome, telefone, end, fstream)
