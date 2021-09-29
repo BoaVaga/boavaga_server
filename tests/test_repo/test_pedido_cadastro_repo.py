@@ -1,3 +1,4 @@
+import logging
 import pathlib
 import unittest
 from collections import namedtuple
@@ -16,6 +17,8 @@ from tests.utils import make_engine, make_general_db_setup, get_adm_sistema, get
 class TestPedidoCadastroRepo(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
+        logging.basicConfig(level=logging.FATAL)
+
         config_path = str(pathlib.Path(__file__).parents[2] / 'test.ini')
         cls.container = create_container(config_path)
 
@@ -209,6 +212,18 @@ class TestPedidoCadastroRepo(unittest.TestCase):
 
         self.uploader.upload.assert_not_called()
         self.image_processor.compress.assert_not_called()
+
+    def test_image_processing_fail(self):
+        self.image_processor.compress.side_effect = Exception('Random error')
+
+        success, error = self.repo.create(self.valid_adm_sess, self.session, self.nome, self.telefone, self.endereco,
+                                          self.fstream)
+
+        self.assertEqual(False, success, 'Success should be False')
+        self.assertEqual('foto_processing_error', error, 'Error should be "foto_processing_error"')
+
+        self.uploader.upload.assert_not_called()
+        self.image_processor.compress.assert_called_once_with(self.fstream, 100, 100)
 
 
 if __name__ == '__main__':

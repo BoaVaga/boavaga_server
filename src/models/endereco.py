@@ -6,7 +6,7 @@ from src.enums import EstadosEnum
 from src.models.base import Base
 
 MAX_LEN_ATTRS = {
-    'logradouro': 100, 'cidade': 50, 'bairro': 50, 'numero': 10, 'cep': 8
+    'logradouro': 100, 'cidade': 50, 'bairro': 50, 'numero': 10
 }
 
 
@@ -60,3 +60,6 @@ class Endereco(Base):
         for nome, max_len in MAX_LEN_ATTRS.items():
             if len(getattr(self, nome)) > max_len:
                 return f'end_{nome}_muito_grande'
+
+        if not self.cep.isdecimal() or len(self.cep) > 8:
+            return 'end_cep_invalido'

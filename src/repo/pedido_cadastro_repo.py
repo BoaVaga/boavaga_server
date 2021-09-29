@@ -23,6 +23,7 @@ class PedidoCadastroRepo:
     FOTO_FORMATO_INVALIDO = 'foto_formato_invalido'
     ERRO_UPLOAD = 'upload_error'
     LIMITE_PEDIDO_ERRO = 'limite_pedido_atingido'
+    FOTO_PROCESSING_ERRO = 'foto_processing_error'
 
     @inject
     def __init__(
@@ -61,6 +62,9 @@ class PedidoCadastroRepo:
             ret = self.image_processor.compress(foto, self.width_foto, self.height_foto)
         except AttributeError:
             return False, self.FOTO_FORMATO_INVALIDO
+        except Exception as ex:
+            logging.getLogger(__name__).error(f'create(): Image processing error.', exc_info=ex)
+            return False, self.FOTO_PROCESSING_ERRO
 
         try:
             ok, upload = self.uploader.upload(ret, self.UPLOAD_GROUP, str(uuid4()))

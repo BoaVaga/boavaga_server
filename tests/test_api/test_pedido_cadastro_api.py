@@ -100,7 +100,7 @@ class TestPedidoCadastroApi(unittest.TestCase):
 
         for error in ['nome_muito_grande', 'sem_permissao', 'telefone_formato_invalido',
                       'telefone_sem_cod_internacional', 'telefone_muito_grande', 'foto_formato_invalido',
-                      'upload_error', 'limite_pedido_atingido']:
+                      'upload_error', 'limite_pedido_atingido', 'foto_processing_error']:
             foto_stream = BytesIO(b'abc')
             self.repo.create.return_value = (False, error)
 
@@ -119,13 +119,15 @@ class TestPedidoCadastroApi(unittest.TestCase):
 
     def test_endereco_validation_fail(self):
         caso_teste = namedtuple('CasoTeste', 'attr values')
-        _attrs = ('logradouro', 'cidade', 'bairro', 'numero', 'cep')
+        _attrs = ('logradouro', 'cidade', 'bairro', 'numero')
 
-        cases = {f'end_{attr}_vazio': caso_teste(attr, ('', '         ')) for attr in _attrs}
+        cases = {f'end_{attr}_vazio': caso_teste(attr, ('', '         ')) for attr in [*_attrs, 'cep']}
         max_len_attr = {
-            'logradouro': 101, 'cidade': 51, 'bairro': 51, 'numero': 11, 'cep': 9
+            'logradouro': 101, 'cidade': 51, 'bairro': 51, 'numero': 11
         }
         cases.update({f'end_{attr}_muito_grande': caso_teste(attr, ['A' * v]) for attr, v in max_len_attr.items()})
+        cases['end_cep_invalido'] = caso_teste('cep', ['A'*8, 'A1111111', '12345 678', '12345-678', '-12345678', '1'*9,
+                                                       '+12345678', '12345.678', '-1234567', '+1234567', '12345.67'])
 
         base_end_dct = BaseEnderecoFactory.create().to_dict()
         self.repo.create.return_value = (False, 'should_not_call_create')
@@ -154,6 +156,53 @@ class TestPedidoCadastroApi(unittest.TestCase):
                 self.assertEqual(error, data['error'], f'Errors should match on "{error}:{i}"')
                 self.assertEqual(False, data['success'], f'Should return False on "{error}:{i}')
 
+    def test_endereco_validation_ok(self):
+        nome, telefone = 'Estacio Teste', '+5512345678901'
+        _attrs = ('logradouro', 'cidade', 'bairro', 'numero', 'cep')
+
+        max_len_attr = {
+            'logradouro': 100, 'cidade': 50, 'bairro': 50, 'numero': 10, 'cep': 8
+        }
+        cases = {attr: [('A'*v, 'A'*v), (' '*v + 'A' + ' '*v, 'A')] for attr, v in max_len_attr.items()}
+        cases['cep'] = [('12345678', '12345678'), ('       12345678   ', '12345678')]
+
+        base_end_dct = BaseEnderecoFactory.create().to_dict()
+        self.repo.create.return_value = (False, 'should_not_call_create')
+
+        for attr, values in cases.items():
+            for i in range(len(values)):
+                foto_stream = BytesIO(b'abc')
+                foto = Upload(nome_arquivo='abc.jpg', sub_dir='foto_estacio', status=UploadStatus.CONCLUIDO)
+
+                end_dct = dict(base_end_dct)
+
+                test_value, real_value = values[i]
+                end_dct[attr] = test_value
+
+                end_obj = Endereco.from_dict(end_dct)
+                setattr(end_obj, attr, real_value)
+
+                self.repo.create.return_value = (True, PedidoCadastro(id=341, nome=nome, telefone=telefone,
+                                                                      endereco=end_obj, foto=foto))
+
+                mutation = Operation(Mutation, variables={'foto': Arg(non_null(UploadType))})
+                mutation.create_pedido_cadastro(nome='Teste', telefone='+5511981845155', endereco=end_dct,
+                                                foto=Variable('foto'))
+
+                js_str = json.dumps({'variables': {'foto': None}, 'query': mutation.__to_graphql__(auto_select_depth=5)})
+                response = self.client.post('/graphql', content_type='multipart/form-data',
+                                            data={'operations': js_str, 'map': '{"0":["variables.foto"]}',
+                                                  '0': (foto_stream, '0')})
+
+                data = self._check_response(response, 'createPedidoCadastro')
+
+                self.assertIsNone(data['error'], f'Error should be null on "{attr}:{i}"')
+                self.assertEqual(True, data['success'], f'Should return True on "{attr}:{i}')
+
+                end_ret = data['pedidoCadastro']['endereco']
+
+                self._check_endereco(end_obj, end_ret, f'"{attr}:{i}"')
+
     def _check_response(self, response, group, i=0):
         self.assertEqual(200, response.status_code, 'Should return a 200 OK code')
         self.assertIn('data', response.json, f'JSON should contain "data" on {i}')
@@ -161,7 +210,7 @@ class TestPedidoCadastroApi(unittest.TestCase):
 
         return response.json['data'][group]
 
-    def _check_endereco(self, endereco: Endereco, ret, i=0):
+    def _check_endereco(self, endereco: Endereco, ret, i='0'):
         end = Endereco.from_dict(ret)
         end.id = endereco.id
 
