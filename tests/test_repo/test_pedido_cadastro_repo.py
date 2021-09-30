@@ -56,6 +56,8 @@ class TestPedidoCadastroRepo(unittest.TestCase):
 
         self.ret_fstream = Mock()
         self.image_processor.compress.return_value = self.ret_fstream
+        self.image_processor.get_default_image_format.return_value = 'png'
+
         self.uploader.upload.return_value = (True, self.upload)
 
         self.file_data = b'abc'

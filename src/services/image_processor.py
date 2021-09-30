@@ -21,3 +21,6 @@ class ImageProcessor:
 
         out_stream.seek(0)
         return out_stream
+
+    def get_default_image_format(self):
+        return self.default_img_format
