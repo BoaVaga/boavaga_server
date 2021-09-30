@@ -1,0 +1,21 @@
+[db]
+conn_string = mysql://user:password@localhost/dbname
+
+[crypto]
+is_testing = 0
+salt_rounds = 12
+
+[memcached]
+host = 127.0.0.1
+port = 11211
+
+[uploader]
+type = LOCAL
+base_path = D:\PATH_TO_UPLOAD
+
+[image_processor]
+def_img_format = png
+
+[pedido_cadastro]
+width_foto = 1280
+height_foto = 720
