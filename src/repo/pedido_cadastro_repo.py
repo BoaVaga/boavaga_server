@@ -67,7 +67,8 @@ class PedidoCadastroRepo:
             return False, self.FOTO_PROCESSING_ERRO
 
         try:
-            ok, upload = self.uploader.upload(ret, self.UPLOAD_GROUP, str(uuid4()))
+            fname = str(uuid4()) + '.' + self.image_processor.default_img_format
+            ok, upload = self.uploader.upload(ret, self.UPLOAD_GROUP, fname)
         except Exception as ex:
             logging.getLogger(__name__).error(f'create(): Upload error.', exc_info=ex)
             return False, self.ERRO_UPLOAD

@@ -14,6 +14,14 @@ class FileStream(ABC):
     def write(self, buffer: Union[bytes, str]):
         pass
 
+    @abstractmethod
+    def seek(self, offset, whence=0):
+        pass
+
+    @abstractmethod
+    def tell(self) -> int:
+        pass
+
 
 class FlaskFileStream(FileStream):
     def __init__(self, file: FileStorage):
@@ -25,6 +33,12 @@ class FlaskFileStream(FileStream):
     def write(self, buffer: bytes):
         raise NotImplementedError
 
+    def seek(self, offset, whence=0):
+        self.file_stream.seek(offset, whence)
+
+    def tell(self) -> int:
+        return self.file_stream.tell()
+
 
 class MemoryFileStream(FileStream):
     def __init__(self, data: bytes = b''):
@@ -35,3 +49,9 @@ class MemoryFileStream(FileStream):
 
     def write(self, buffer: bytes) -> int:
         return self._stream.write(buffer)
+
+    def seek(self, offset, whence=0):
+        self._stream.seek(offset, whence)
+
+    def tell(self) -> int:
+        return self._stream.tell()

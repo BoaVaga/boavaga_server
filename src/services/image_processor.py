@@ -19,4 +19,5 @@ class ImageProcessor:
         out_stream = MemoryFileStream()
         resized.save(out_stream, format=img_format)
 
+        out_stream.seek(0)
         return out_stream
