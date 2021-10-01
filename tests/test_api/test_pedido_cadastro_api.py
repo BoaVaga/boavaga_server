@@ -14,7 +14,7 @@ from src.container import create_container
 from src.enums import UploadStatus
 from src.models import PedidoCadastro, Endereco, Upload
 from src.repo.repo_container import create_repo_container
-from tests.factories import BaseEnderecoFactory
+from tests.factories import EnderecoFactory
 from tests.test_api.nodes import Mutation, Upload as UploadType
 from tests.utils import make_engine, make_mocked_cached_provider, make_general_db_setup, get_adm_estacio_login, \
     make_savepoint, general_db_teardown
@@ -62,7 +62,7 @@ class TestPedidoCadastroApi(unittest.TestCase):
 
     def test_create_ok(self):
         nome, telefone = 'Estacio Teste', '+5512345678901'
-        endereco = BaseEnderecoFactory.create()
+        endereco = EnderecoFactory.build()
         endereco_dct = endereco.to_dict()
         foto_stream = BytesIO(b'abc')
         foto = Upload(nome_arquivo='abc.jpg', sub_dir='foto_estacio', status=UploadStatus.CONCLUIDO)
@@ -96,7 +96,7 @@ class TestPedidoCadastroApi(unittest.TestCase):
         self.assertEqual(foto_url, pedido['foto'], 'Fotos url should match')
 
     def test_create_errors(self):
-        end_dct = BaseEnderecoFactory.create().to_dict()
+        end_dct = EnderecoFactory.build().to_dict()
 
         for error in ['nome_muito_grande', 'sem_permissao', 'telefone_formato_invalido',
                       'telefone_sem_cod_internacional', 'telefone_muito_grande', 'foto_formato_invalido',
@@ -129,7 +129,7 @@ class TestPedidoCadastroApi(unittest.TestCase):
         cases['end_cep_invalido'] = caso_teste('cep', ['A'*8, 'A1111111', '12345 678', '12345-678', '-12345678', '1'*9,
                                                        '+12345678', '12345.678', '-1234567', '+1234567', '12345.67'])
 
-        base_end_dct = BaseEnderecoFactory.create().to_dict()
+        base_end_dct = EnderecoFactory.build().to_dict()
         self.repo.create.return_value = (False, 'should_not_call_create')
 
         for error, caso in cases.items():
@@ -166,7 +166,7 @@ class TestPedidoCadastroApi(unittest.TestCase):
         cases = {attr: [('A'*v, 'A'*v), (' '*v + 'A' + ' '*v, 'A')] for attr, v in max_len_attr.items()}
         cases['cep'] = [('12345678', '12345678'), ('       12345678   ', '12345678')]
 
-        base_end_dct = BaseEnderecoFactory.create().to_dict()
+        base_end_dct = EnderecoFactory.build().to_dict()
         self.repo.create.return_value = (False, 'should_not_call_create')
 
         for attr, values in cases.items():

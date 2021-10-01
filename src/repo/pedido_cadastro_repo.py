@@ -1,5 +1,5 @@
 import logging
-from typing import Tuple, Union
+from typing import Tuple, Union, Iterable
 from uuid import uuid4
 
 from dependency_injector.wiring import Provide, inject
@@ -16,6 +16,7 @@ from src.utils import validate_telefone
 class PedidoCadastroRepo:
     UPLOAD_GROUP = 'foto_estacio'
     ERRO_SEM_PERMISSAO = 'sem_permissao'
+    ERRO_PEDIDO_NAO_ENCONTRADO = 'pedido_nao_encontrado'
     NOME_MUITO_GRANDE = 'nome_muito_grande'
     TEL_FORMATO_INV = 'telefone_formato_invalido'
     TEL_SEM_COD_INTER = 'telefone_sem_cod_internacional'
@@ -77,5 +78,32 @@ class PedidoCadastroRepo:
                                 admin_estacio=user_sess.user)
         sess.add(pedido)
         sess.commit()
+
+        return True, pedido
+
+    def list(self, user_sess: UserSession, sess: Session, amount: int = 0, index: int = 0) \
+            -> Tuple[bool, Union[str, Iterable[PedidoCadastro]]]:
+        if user_sess is None or user_sess.tipo != UserType.SISTEMA:
+            return False, self.ERRO_SEM_PERMISSAO
+
+        if index < 0:
+            return True, tuple()
+
+        query = sess.query(PedidoCadastro).offset(index)
+
+        if amount > 0:
+            query = query.limit(amount)
+
+        pedidos = query.all()
+
+        return True, pedidos
+
+    def get(self, user_sess: UserSession, sess: Session, pedido_id: int) -> Tuple[bool, Union[str, PedidoCadastro]]:
+        if user_sess is None or user_sess.tipo != UserType.SISTEMA:
+            return False, self.ERRO_SEM_PERMISSAO
+
+        pedido = sess.query(PedidoCadastro).get(pedido_id)
+        if pedido is None:
+            return False, self.ERRO_PEDIDO_NAO_ENCONTRADO
 
         return True, pedido

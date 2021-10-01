@@ -1,84 +1,13 @@
-import logging
-import pathlib
 import unittest
 from collections import namedtuple
-from unittest.mock import Mock, ANY
+from unittest.mock import ANY
 
-from src.classes.file_stream import MemoryFileStream
-from src.container import create_container
-from src.enums import UploadStatus
-from src.models import AdminSistema, AdminEstacio, PedidoCadastro, Endereco
-from src.repo import PedidoCadastroRepo
-from tests.factories import set_session, BaseEnderecoFactory, UploadFactory
-from tests.utils import make_engine, make_general_db_setup, get_adm_sistema, get_adm_estacio, make_savepoint, \
-    singleton_provider, general_db_teardown, MockedCached
+from src.models import PedidoCadastro, Endereco
+from tests.test_repo.test_pedido_cadastro_repo.base import BaseTestPedidoCadastro
+from tests.utils import get_adm_estacio
 
 
-class TestPedidoCadastroRepo(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls) -> None:
-        logging.basicConfig(level=logging.FATAL)
-
-        config_path = str(pathlib.Path(__file__).parents[2] / 'test.ini')
-        cls.container = create_container(config_path)
-
-        conn_string = str(cls.container.config.get('db')['conn_string'])
-        cls.engine = make_engine(conn_string)
-
-    @classmethod
-    def tearDownClass(cls) -> None:
-        cls.engine.dispose()
-
-    def setUp(self) -> None:
-        self.cached = MockedCached(self.container)
-        self.container.cached.override(singleton_provider(self.cached))
-
-        self.conn, self.outer_trans, self.session = make_general_db_setup(self.engine)
-        set_session(self.session)  # Factories
-
-        self.crypto = self.container.crypto()
-
-        self.adm_sis, self.adm_sis_sess = get_adm_sistema(self.crypto, self.session)
-        self.valid_adm, self.valid_adm_sess = get_adm_estacio(self.crypto, self.session)
-
-        self.session.commit()
-        make_savepoint(self.conn, self.session)
-
-        self.uploader = Mock()
-        self.container.uploader.override(singleton_provider(self.uploader))
-        self.image_processor = Mock()
-        self.container.image_processor.override(singleton_provider(self.image_processor))
-
-        cfg = self.container.config.get('pedido_cadastro')
-        self.repo = PedidoCadastroRepo(int(cfg['width_foto']), int(cfg['height_foto']))
-
-        self.upload = UploadFactory(sub_dir='foto_estacio', status=UploadStatus.CONCLUIDO)
-
-        self.ret_fstream = Mock()
-        self.image_processor.compress.return_value = self.ret_fstream
-        self.image_processor.get_default_image_format.return_value = 'png'
-
-        self.uploader.upload.return_value = (True, self.upload)
-
-        self.file_data = b'abc'
-        self.fstream = MemoryFileStream(self.file_data)
-        self.endereco = BaseEnderecoFactory()
-
-        self.nome = 'Estacionamento de Teste'
-        self.telefone = '+55123456789034'
-
-    def tearDown(self) -> None:
-        general_db_teardown(self.conn, self.outer_trans, self.session)
-
-        self.cached.clear_all()
-
-    def test_setup(self):
-        admin_sis = self.session.query(AdminSistema).all()
-        admin_estacio = self.session.query(AdminEstacio).all()
-
-        self.assertEqual([self.adm_sis], admin_sis)
-        self.assertEqual([self.valid_adm], admin_estacio)
-
+class TestPedidoCadastroRepoCreate(BaseTestPedidoCadastro):
     def test_create_ok(self):
         Arg = namedtuple('Arg', 'u_sess nome tel endereco fstream')
         Ret = namedtuple('Ret', 'user nome tel img_proc_call upload_call foto')
@@ -138,7 +67,7 @@ class TestPedidoCadastroRepo(unittest.TestCase):
         nomes = ['A' * 101, 'ABC' * 55]
 
         for nome in nomes:
-            success, error = self.repo.create(self.valid_adm_sess, self.session, nome, self.telefone, self.endereco,
+            success, error = self.repo.create(self.adm_estacio_sess, self.session, nome, self.telefone, self.endereco,
                                               self.fstream)
 
             self.assertEqual(False, success, 'Success should be False')
@@ -159,7 +88,7 @@ class TestPedidoCadastroRepo(unittest.TestCase):
             for i in range(len(tests)):
                 tel = tests[i]
 
-                success, error = self.repo.create(self.valid_adm_sess, self.session, self.nome, tel,
+                success, error = self.repo.create(self.adm_estacio_sess, self.session, self.nome, tel,
                                                   self.endereco, self.fstream)
 
                 self.assertEqual(False, success, f'Success should be False on "{ret_error}:{i}"')
@@ -171,7 +100,7 @@ class TestPedidoCadastroRepo(unittest.TestCase):
     def test_create_foto_invalida(self):
         self.image_processor.compress.side_effect = AttributeError('File stream does not contain a valid image')
 
-        success, error = self.repo.create(self.valid_adm_sess, self.session, self.nome, self.telefone, self.endereco,
+        success, error = self.repo.create(self.adm_estacio_sess, self.session, self.nome, self.telefone, self.endereco,
                                           self.fstream)
 
         self.assertEqual(False, success, 'Success should be False')
@@ -183,7 +112,7 @@ class TestPedidoCadastroRepo(unittest.TestCase):
     def test_create_error_upload(self):
         self.uploader.upload.side_effect = Exception('Erro aleatorio')
 
-        success, error = self.repo.create(self.valid_adm_sess, self.session, self.nome, self.telefone, self.endereco,
+        success, error = self.repo.create(self.adm_estacio_sess, self.session, self.nome, self.telefone, self.endereco,
                                           self.fstream)
 
         self.assertEqual(False, success, 'Success should be False')
@@ -193,12 +122,13 @@ class TestPedidoCadastroRepo(unittest.TestCase):
         self.uploader.upload.assert_called_once_with(self.ret_fstream, 'foto_estacio', ANY)
 
         c = self.session.query(PedidoCadastro).count()
-        self.assertEqual(0, c, 'There should not be any pedido added to the db')
+        self.assertEqual(len(self.pedidos), c, 'There should not be any pedido added to the db')
+
         c = self.session.query(Endereco).count()
-        self.assertEqual(0, c, 'There should not be any endereco added to the db')
+        self.assertEqual(len(self.pedidos), c, 'There should not be any endereco added to the db')
 
     def test_create_one_admin_make_two_requests(self):
-        success, pedido = self.repo.create(self.valid_adm_sess, self.session, self.nome, self.telefone,
+        success, pedido = self.repo.create(self.adm_estacio_sess, self.session, self.nome, self.telefone,
                                            self.endereco, self.fstream)
 
         self.assertEqual(True, success, f'Success should be True. Error: {pedido}')
@@ -206,7 +136,7 @@ class TestPedidoCadastroRepo(unittest.TestCase):
         self.uploader.reset_mock()
         self.image_processor.reset_mock()
 
-        success, error = self.repo.create(self.valid_adm_sess, self.session, self.nome + 'x', self.telefone + '1',
+        success, error = self.repo.create(self.adm_estacio_sess, self.session, self.nome + 'x', self.telefone + '1',
                                           self.endereco, self.fstream)
 
         self.assertEqual(False, success, 'Success should be False on the second request')
@@ -218,7 +148,7 @@ class TestPedidoCadastroRepo(unittest.TestCase):
     def test_image_processing_fail(self):
         self.image_processor.compress.side_effect = Exception('Random error')
 
-        success, error = self.repo.create(self.valid_adm_sess, self.session, self.nome, self.telefone, self.endereco,
+        success, error = self.repo.create(self.adm_estacio_sess, self.session, self.nome, self.telefone, self.endereco,
                                           self.fstream)
 
         self.assertEqual(False, success, 'Success should be False')
