@@ -1,3 +1,4 @@
+import logging
 import pathlib
 import unittest
 from uuid import uuid1
@@ -20,6 +21,8 @@ class TestAuthApi(unittest.TestCase):
         cls.repo_container = create_repo_container(config_path)
 
     def setUp(self) -> None:
+        logging.basicConfig(level=logging.FATAL)
+
         self.repo_container.auth_repo.override(Singleton(Mock))
         self.repo = self.repo_container.auth_repo()
 
@@ -56,8 +59,13 @@ class TestAuthApi(unittest.TestCase):
             (UserTypeNode('ESTACIONAMENTO'), 'jorge@email.com'),
         ]
 
-        for error in ['senha_incorreta', 'email_nao_encontrado', 'random_ex_122131234']:
-            self.repo.login.return_value = (False, error)
+        for error in ['senha_incorreta', 'email_nao_encontrado', None]:
+            self.repo.login.reset_mock()
+            if error is None:
+                self.repo.login.side_effect = Exception('Random Error')
+                error = 'erro_desconhecido'
+            else:
+                self.repo.login.return_value = (False, error)
 
             for i in range(len(requests)):
                 tipo, email = requests[i]

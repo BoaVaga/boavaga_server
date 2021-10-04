@@ -1,3 +1,5 @@
+import logging
+
 import flask
 from ariadne import convert_kwargs_to_snake_case
 from dependency_injector.wiring import Provide, inject
@@ -10,6 +12,8 @@ from src.services import Cached
 
 
 class AdminSistemaApi(BaseApi):
+    ERRO_DESCONHECIDO = 'erro_desconhecido'
+
     @inject
     def __init__(self, admin_sistema_repo: AdminSistemaRepo = Provide[RepoContainer.admin_sistema_repo],
                  cached: Cached = Provide[Container.cached]):
@@ -28,11 +32,16 @@ class AdminSistemaApi(BaseApi):
         sess: Session = flask.g.session
         user_sess = self.get_user_session(sess, self.cached, info)
 
-        success, error_or_admin = self.repo.create_admin(user_sess, sess, nome, email, senha)
+        try:
+            success, error_or_admin = self.repo.create_admin(user_sess, sess, nome, email, senha)
+        except Exception as ex:
+            logging.getLogger(__name__).error('Error on create_admin_resolver', exc_info=ex)
+            success, error_or_admin = False, self.ERRO_DESCONHECIDO
+
         if success:
             payload = {
                 'success': True,
-                'adminSistema': error_or_admin
+                'admin_sistema': error_or_admin
             }
         else:
             payload = {

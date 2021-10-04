@@ -1,6 +1,8 @@
 from sqlalchemy import Column, SmallInteger, String, ForeignKey
 from sqlalchemy.orm import relationship
 
+from src.models.admin_estacio import AdminEstacio
+from src.models.endereco import Endereco
 from src.models.base import Base
 
 

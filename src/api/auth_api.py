@@ -1,3 +1,5 @@
+import logging
+
 import flask
 from ariadne import convert_kwargs_to_snake_case
 from dependency_injector.wiring import Provide
@@ -9,6 +11,8 @@ from src.repo import AuthRepo, RepoContainer
 
 
 class AuthApi(BaseApi):
+    ERRO_DESCONHECIDO = 'erro_desconhecido'
+
     def __init__(self, auth_repo: AuthRepo = Provide[RepoContainer.auth_repo]):
         self.auth_repo = auth_repo
 
@@ -23,7 +27,12 @@ class AuthApi(BaseApi):
     def login_resolver(self, *_, email: str, senha: str, tipo: UserType):
         sess: Session = flask.g.session
 
-        success, error_or_token = self.auth_repo.login(sess, email, senha, tipo)
+        try:
+            success, error_or_token = self.auth_repo.login(sess, email, senha, tipo)
+        except Exception as ex:
+            logging.getLogger(__name__).error('Error on login_resolver', exc_info=ex)
+            success, error_or_token = False, self.ERRO_DESCONHECIDO
+
         if success:
             payload = {
                 'success': True,

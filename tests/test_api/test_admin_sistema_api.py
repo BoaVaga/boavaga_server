@@ -1,3 +1,4 @@
+import logging
 import pathlib
 import unittest
 from unittest.mock import Mock, ANY
@@ -29,6 +30,7 @@ class TestAdminSistemaApi(unittest.TestCase):
         cls.engine.dispose()
 
     def setUp(self) -> None:
+        logging.basicConfig(level=logging.FATAL)
         self.container.cached.override(make_mocked_cached_provider(self.container))
 
         self.conn, self.outer_trans, self.session = make_general_db_setup(self.engine)
@@ -77,8 +79,13 @@ class TestAdminSistemaApi(unittest.TestCase):
         self.repo.create_admin.assert_called_once_with(self.user_sess, ANY, nome, email, senha)
 
     def test_create_errors(self):
-        for error in ['email_ja_cadastrado', 'sem_permissao', 'Random exception']:
-            self.repo.create_admin.return_value = (False, error)
+        for error in ['email_ja_cadastrado', 'sem_permissao', None]:
+            self.repo.create_admin.reset_mock()
+            if error is None:
+                self.repo.create_admin.side_effect = Exception('Random Error')
+                error = 'erro_desconhecido'
+            else:
+                self.repo.create_admin.return_value = (False, error)
 
             mutation = Operation(Mutation)
             mutation.create_admin_sistema(nome='Pedrinho', email='pedrinho@un.com', senha='pedrao123')

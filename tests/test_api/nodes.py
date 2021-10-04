@@ -1,4 +1,4 @@
-from sgqlc.types import String, Type, Boolean, ID, Field, Enum, Scalar
+from sgqlc.types import String, Type, Boolean, ID, Field, Enum, Scalar, list_of, Int
 
 from src.enums import EstadosEnum
 
@@ -16,6 +16,7 @@ class EstadosEnumNode(Enum):
 
 
 class EnderecoNode(Type):
+    id = ID
     logradouro = String
     estado = EstadosEnumNode
     cidade = String
@@ -76,8 +77,19 @@ class PedidoCadastroResNode(Type):
     pedido_cadastro = PedidoCadastroNode
 
 
+class PedidoCadastroResListNode(Type):
+    success = Boolean
+    error = String
+    pedidos_cadastro = list_of(PedidoCadastroNode)
+
+
 class Mutation(Type):
     login = Field(LoginResNode, args={'tipo': UserTypeNode, 'email': String, 'senha': String})
     create_admin_sistema = Field(CreateResNode, args={'nome': String, 'email': String, 'senha': String})
     create_pedido_cadastro = Field(PedidoCadastroResNode, args={'nome': String, 'telefone': String,
                                                                 'endereco': EnderecoNode, 'foto': Upload})
+
+
+class Query(Type):
+    get_pedido_cadastro = Field(PedidoCadastroResNode, args={'pedido_id': ID})
+    list_pedido_cadastro = Field(PedidoCadastroResListNode, args={'amount': Int, 'index': Int})

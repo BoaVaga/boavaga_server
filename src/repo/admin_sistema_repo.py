@@ -36,7 +36,6 @@ class AdminSistemaRepo:
             sess.rollback()
 
             return False, self.EMAIL_JA_CADASTRADO
-        except Exception as ex:
+        except Exception:
             sess.rollback()
-
-            return False, str(ex)
+            raise

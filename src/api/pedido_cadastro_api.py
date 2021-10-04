@@ -1,3 +1,5 @@
+import logging
+
 import flask
 from ariadne import convert_kwargs_to_snake_case
 from dependency_injector.wiring import Provide
@@ -14,12 +16,17 @@ from src.services import Cached
 
 
 class PedidoCadastroApi(BaseApi):
+    ERRO_DESCONHECIDO = 'erro_desconhecido'
+
     def __init__(self, pedido_cad_repo: PedidoCadastroRepo = Provide[RepoContainer.pedido_cadastro_repo],
                  cached: Cached = Provide[Container.cached]):
         self.pedido_cad_repo = pedido_cad_repo
         self.cached = cached
 
-        queries = {}
+        queries = {
+            'listPedidoCadastro': self.list_resolver,
+            'getPedidoCadastro': self.get_resolver
+        }
         mutations = {
             'createPedidoCadastro': self.create_resolver
         }
@@ -42,13 +49,61 @@ class PedidoCadastroApi(BaseApi):
                 'error': val_res
             }
 
-        fstream = FlaskFileStream(foto)
-        success, error_or_pedido = self.pedido_cad_repo.create(user_sess, sess, nome, telefone, end, fstream)
+        try:
+            fstream = FlaskFileStream(foto)
+            success, error_or_pedido = self.pedido_cad_repo.create(user_sess, sess, nome, telefone, end, fstream)
+        except Exception as ex:
+            logging.getLogger(__name__).error('Error on create_resolver', exc_info=ex)
+            success, error_or_pedido = False, self.ERRO_DESCONHECIDO
 
         if success:
             return {
                 'success': True,
-                'pedidoCadastro': error_or_pedido
+                'pedido_cadastro': error_or_pedido
+            }
+        else:
+            return {
+                'success': False,
+                'error': error_or_pedido
+            }
+
+    @convert_kwargs_to_snake_case
+    def list_resolver(self, _, info, amount: int = 0, index: int = 0):
+        sess: Session = flask.g.session
+        user_sess = self.get_user_session(sess, self.cached, info)
+
+        try:
+            success, error_or_pedidos = self.pedido_cad_repo.list(user_sess, sess, amount=amount, index=index)
+        except Exception as ex:
+            logging.getLogger(__name__).error('Error on list_resolver', exc_info=ex)
+            success, error_or_pedidos = False, self.ERRO_DESCONHECIDO
+
+        if success:
+            return {
+                'success': True,
+                'pedidos_cadastro': error_or_pedidos
+            }
+        else:
+            return {
+                'success': False,
+                'error': error_or_pedidos
+            }
+
+    @convert_kwargs_to_snake_case
+    def get_resolver(self, _, info, pedido_id: str):
+        sess: Session = flask.g.session
+        user_sess = self.get_user_session(sess, self.cached, info)
+
+        try:
+            success, error_or_pedido = self.pedido_cad_repo.get(user_sess, sess, pedido_id)
+        except Exception as ex:
+            logging.getLogger(__name__).error('Error on get_resolver', exc_info=ex)
+            success, error_or_pedido = False, self.ERRO_DESCONHECIDO
+
+        if success:
+            return {
+                'success': True,
+                'pedido_cadastro': error_or_pedido
             }
         else:
             return {

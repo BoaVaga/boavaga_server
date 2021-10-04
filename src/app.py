@@ -3,7 +3,7 @@ import pathlib
 from typing import Iterable
 
 import flask
-from ariadne import graphql_sync, load_schema_from_path, make_executable_schema, fallback_resolvers, \
+from ariadne import graphql_sync, load_schema_from_path, make_executable_schema, snake_case_fallback_resolvers, \
     ObjectType, upload_scalar, combine_multipart_data, EnumType
 from ariadne.constants import PLAYGROUND_HTML
 from flask import Flask
@@ -57,7 +57,7 @@ def setup_graphql_server(app: Flask, schema_path: str, api_list: Iterable[type],
     enum_types = [EnumType(x.__name__, x) for x in GRAPHQL_SCHEMA_ENUMS]
 
     type_defs = load_schema_from_path(schema_path)
-    schema = make_executable_schema(type_defs, query, mutation, fallback_resolvers, upload_scalar, *enum_types,
+    schema = make_executable_schema(type_defs, query, mutation, snake_case_fallback_resolvers, upload_scalar, *enum_types,
                                     directives=directive_dict)
 
     @app.route('/graphql', methods=['GET'])

@@ -57,13 +57,13 @@ class TestPedidoCadastroRepoList(BaseTestPedidoCadastro):
     def test_get_ok(self):
         real_pedido = self.pedidos[0]
 
-        success, pedido = self.repo.get(self.adm_sis_sess, self.session, real_pedido.id)
+        success, pedido = self.repo.get(self.adm_sis_sess, self.session, str(real_pedido.id))
 
         self.assertEqual(True, success, 'Success should be True')
         self.assertEqual(real_pedido, pedido, 'Pedidos should match')
 
     def test_get_not_found(self):
-        _cases = [1000, -1]
+        _cases = ['1000', '-1']
         for i in range(len(_cases)):
             success, error = self.repo.get(self.adm_sis_sess, self.session, _cases[i])
 
@@ -74,7 +74,7 @@ class TestPedidoCadastroRepoList(BaseTestPedidoCadastro):
         _sessions = [self.adm_estacio_sess, None]
 
         for i in range(len(_sessions)):
-            success, error = self.repo.get(_sessions[i], self.session, self.pedidos[0].id)
+            success, error = self.repo.get(_sessions[i], self.session, str(self.pedidos[0].id))
 
             self.assertEqual(False, success, f'Success should be False on {i}')
             self.assertEqual('sem_permissao', error, f'Error should be "sem_permissao" on {i}')

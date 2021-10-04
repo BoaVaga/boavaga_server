@@ -42,6 +42,7 @@ type PedidoCadastro {
 }
 
 type Endereco {
+    id: ID!,
     logradouro: String!,
     estado: EstadosEnum!,
     cidade: String!,
@@ -77,6 +78,12 @@ type PedidoCadastroRes {
     pedidoCadastro: PedidoCadastro
 }
 
+type PedidoCadastroResList {
+    success: Boolean!,
+    error: String,
+    pedidosCadastro: [PedidoCadastro]
+}
+
 type Mutation {
     createAdminSistema(nome: String!, email: String!, senha: String!): BaseAdminSistemaRes!
     login(email: String!, senha: String!, tipo: UserType!): LoginRes!
@@ -84,5 +91,6 @@ type Mutation {
 }
 
 type Query {
-    test(a: String): String!
+    getPedidoCadastro(pedidoId: ID!): PedidoCadastroRes!
+    listPedidoCadastro(amount: Int, index: Int): PedidoCadastroResList!
 }

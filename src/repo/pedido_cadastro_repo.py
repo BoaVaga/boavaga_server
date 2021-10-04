@@ -98,7 +98,7 @@ class PedidoCadastroRepo:
 
         return True, pedidos
 
-    def get(self, user_sess: UserSession, sess: Session, pedido_id: int) -> Tuple[bool, Union[str, PedidoCadastro]]:
+    def get(self, user_sess: UserSession, sess: Session, pedido_id: str) -> Tuple[bool, Union[str, PedidoCadastro]]:
         if user_sess is None or user_sess.tipo != UserType.SISTEMA:
             return False, self.ERRO_SEM_PERMISSAO
 
