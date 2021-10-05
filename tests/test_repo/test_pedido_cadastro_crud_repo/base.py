@@ -7,13 +7,13 @@ from src.classes.file_stream import MemoryFileStream
 from src.container import create_container
 from src.enums import UploadStatus
 from src.models import AdminSistema, AdminEstacio, PedidoCadastro
-from src.repo import PedidoCadastroRepo
+from src.repo import PedidoCadastroCrudRepo
 from tests.factories import set_session, UploadFactory, PedidoCadastroFactory, EnderecoFactory
 from tests.utils import make_engine, make_general_db_setup, get_adm_sistema, get_adm_estacio, make_savepoint, \
     singleton_provider, general_db_teardown, MockedCached
 
 
-class BaseTestPedidoCadastro(unittest.TestCase):
+class BaseTestPedidoCadastroCrudRepo(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         logging.basicConfig(level=logging.FATAL)
@@ -51,7 +51,7 @@ class BaseTestPedidoCadastro(unittest.TestCase):
         self.container.image_processor.override(singleton_provider(self.image_processor))
 
         cfg = self.container.config.get('pedido_cadastro')
-        self.repo = PedidoCadastroRepo(int(cfg['width_foto']), int(cfg['height_foto']))
+        self.repo = PedidoCadastroCrudRepo(int(cfg['width_foto']), int(cfg['height_foto']))
 
         self.upload = UploadFactory(sub_dir='foto_estacio', status=UploadStatus.CONCLUIDO)
 

@@ -13,7 +13,7 @@ from src.services import Uploader, ImageProcessor
 from src.utils import validate_telefone
 
 
-class PedidoCadastroRepo:
+class PedidoCadastroCrudRepo:
     UPLOAD_GROUP = 'foto_estacio'
     ERRO_SEM_PERMISSAO = 'sem_permissao'
     ERRO_PEDIDO_NAO_ENCONTRADO = 'pedido_nao_encontrado'

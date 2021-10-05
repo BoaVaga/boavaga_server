@@ -1,9 +1,9 @@
 import unittest
 
-from tests.test_repo.test_pedido_cadastro_repo.base import BaseTestPedidoCadastro
+from tests.test_repo.test_pedido_cadastro_crud_repo.base import BaseTestPedidoCadastroCrudRepo
 
 
-class TestPedidoCadastroRepoList(BaseTestPedidoCadastro):
+class TestPedidoCadastroCrudRepoList(BaseTestPedidoCadastroCrudRepo):
     def test_list_all_ok(self):
         success, all_pedidos = self.repo.list(self.adm_sis_sess, self.session)
 

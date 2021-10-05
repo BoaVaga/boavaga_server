@@ -41,8 +41,8 @@ class BaseTestPedidoCadastroApi(unittest.TestCase):
 
         make_savepoint(self.conn, self.session)
 
-        self.repo_container.pedido_cadastro_repo.override(Singleton(Mock))
-        self.repo = self.repo_container.pedido_cadastro_repo()
+        self.repo_container.pedido_cadastro_crud_repo.override(Singleton(Mock))
+        self.repo = self.repo_container.pedido_cadastro_crud_repo()
 
         self.app = create_app(self.container, self.repo_container)
         self.client = self.app.test_client(use_cookies=False)

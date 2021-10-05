@@ -3,11 +3,11 @@ from collections import namedtuple
 from unittest.mock import ANY
 
 from src.models import PedidoCadastro, Endereco
-from tests.test_repo.test_pedido_cadastro_repo.base import BaseTestPedidoCadastro
+from tests.test_repo.test_pedido_cadastro_crud_repo.base import BaseTestPedidoCadastroCrudRepo
 from tests.utils import get_adm_estacio
 
 
-class TestPedidoCadastroRepoCreate(BaseTestPedidoCadastro):
+class TestPedidoCadastroCrudRepoCreate(BaseTestPedidoCadastroCrudRepo):
     def test_create_ok(self):
         Arg = namedtuple('Arg', 'u_sess nome tel endereco fstream')
         Ret = namedtuple('Ret', 'user nome tel img_proc_call upload_call foto')

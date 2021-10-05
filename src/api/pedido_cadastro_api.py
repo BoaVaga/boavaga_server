@@ -11,16 +11,16 @@ from src.classes import FlaskFileStream
 from src.container import Container
 from src.enums import EstadosEnum
 from src.models import Endereco
-from src.repo import PedidoCadastroRepo, RepoContainer
+from src.repo import PedidoCadastroCrudRepo, RepoContainer
 from src.services import Cached
 
 
 class PedidoCadastroApi(BaseApi):
     ERRO_DESCONHECIDO = 'erro_desconhecido'
 
-    def __init__(self, pedido_cad_repo: PedidoCadastroRepo = Provide[RepoContainer.pedido_cadastro_repo],
+    def __init__(self, pedido_cad_crud_repo: PedidoCadastroCrudRepo = Provide[RepoContainer.pedido_cadastro_crud_repo],
                  cached: Cached = Provide[Container.cached]):
-        self.pedido_cad_repo = pedido_cad_repo
+        self.pedido_cad_crud_repo = pedido_cad_crud_repo
         self.cached = cached
 
         queries = {
@@ -51,7 +51,7 @@ class PedidoCadastroApi(BaseApi):
 
         try:
             fstream = FlaskFileStream(foto)
-            success, error_or_pedido = self.pedido_cad_repo.create(user_sess, sess, nome, telefone, end, fstream)
+            success, error_or_pedido = self.pedido_cad_crud_repo.create(user_sess, sess, nome, telefone, end, fstream)
         except Exception as ex:
             logging.getLogger(__name__).error('Error on create_resolver', exc_info=ex)
             success, error_or_pedido = False, self.ERRO_DESCONHECIDO
@@ -73,7 +73,7 @@ class PedidoCadastroApi(BaseApi):
         user_sess = self.get_user_session(sess, self.cached, info)
 
         try:
-            success, error_or_pedidos = self.pedido_cad_repo.list(user_sess, sess, amount=amount, index=index)
+            success, error_or_pedidos = self.pedido_cad_crud_repo.list(user_sess, sess, amount=amount, index=index)
         except Exception as ex:
             logging.getLogger(__name__).error('Error on list_resolver', exc_info=ex)
             success, error_or_pedidos = False, self.ERRO_DESCONHECIDO
@@ -95,7 +95,7 @@ class PedidoCadastroApi(BaseApi):
         user_sess = self.get_user_session(sess, self.cached, info)
 
         try:
-            success, error_or_pedido = self.pedido_cad_repo.get(user_sess, sess, pedido_id)
+            success, error_or_pedido = self.pedido_cad_crud_repo.get(user_sess, sess, pedido_id)
         except Exception as ex:
             logging.getLogger(__name__).error('Error on get_resolver', exc_info=ex)
             success, error_or_pedido = False, self.ERRO_DESCONHECIDO
