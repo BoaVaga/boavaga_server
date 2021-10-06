@@ -76,6 +76,7 @@ class EnderecoFactory(factory.alchemy.SQLAlchemyModelFactory):
     bairro = factory.Faker('bairro', locale='pt_BR')
     numero = factory.Faker('building_number', locale='pt_BR')
     cep = factory.Faker('postcode', locale='pt_BR', formatted=False)
+    coordenadas = None
 
     class Meta:
         model = Endereco

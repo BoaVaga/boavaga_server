@@ -11,6 +11,7 @@ class Estacionamento(Base):
     nome = Column(String(100), nullable=False)
     esta_suspenso = Column(Boolean(), nullable=False)
     esta_aberto = Column(Boolean(), nullable=False)
+    cadastro_terminado = Column(Boolean(), nullable=False)
     descricao = Column(Text(), nullable=True)
     telefone = Column(String(20), nullable=False)
     qtd_vaga_livre = Column(SmallInteger(), nullable=False)
@@ -34,6 +35,7 @@ class Estacionamento(Base):
                 self.nome == other.nome and
                 self.esta_suspenso == other.esta_suspenso and
                 self.esta_aberto == other.esta_aberto and
+                self.cadastro_terminado == other.cadastro_terminado and
                 self.descricao == other.descricao and
                 self.telefone == other.telefone and
                 self.qtd_vaga_livre == other.qtd_vaga_livre and
