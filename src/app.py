@@ -1,18 +1,12 @@
-import json
 import pathlib
-from typing import Iterable
 
 import flask
-from ariadne import graphql_sync, load_schema_from_path, make_executable_schema, snake_case_fallback_resolvers, \
-    ObjectType, upload_scalar, combine_multipart_data, EnumType
-from ariadne.constants import PLAYGROUND_HTML
 from flask import Flask
 from flask_cors import CORS
 
 from src.api import APIS
-from src.api.base import BaseApi
 from src.container import Container
-from src.enums import GRAPHQL_SCHEMA_ENUMS
+from src.graphql_server import setup_graphql_server
 from src.repo import RepoContainer
 from src.services import DbSessionMaker
 
@@ -41,43 +35,3 @@ def setup_db_connection(app: Flask, session_maker: DbSessionMaker):
     def shutdown_session(response_or_exc):
         flask.g.session.rollback()
         flask.g.session.close()
-
-
-def setup_graphql_server(app: Flask, schema_path: str, api_list: Iterable[type], directive_dict):
-    query = ObjectType('Query')
-    mutation = ObjectType('Mutation')
-
-    for api_class in api_list:
-        api: BaseApi = api_class()
-        for name, resolver in api.queries.items():
-            query.set_field(name, resolver)
-        for name, resolver in api.mutations.items():
-            mutation.set_field(name, resolver)
-
-    enum_types = [EnumType(x.__name__, x) for x in GRAPHQL_SCHEMA_ENUMS]
-
-    type_defs = load_schema_from_path(schema_path)
-    schema = make_executable_schema(type_defs, query, mutation, snake_case_fallback_resolvers, upload_scalar, *enum_types,
-                                    directives=directive_dict)
-
-    @app.route('/graphql', methods=['GET'])
-    def graphql_playground():
-        return PLAYGROUND_HTML, 200
-
-    @app.route('/graphql', methods=['POST'])
-    def graphql_server():
-        if flask.request.content_type.startswith('multipart/form-data'):
-            data = combine_multipart_data(
-                json.loads(flask.request.form.get("operations")),
-                json.loads(flask.request.form.get("map")),
-                dict(flask.request.files)
-            )
-        elif flask.request.is_json:
-            data = flask.request.get_json()
-        else:
-            return '', 400
-
-        success, result = graphql_sync(schema, data, context_value=flask.request, debug=app.debug)
-
-        status_code = 200 if success else 400
-        return flask.jsonify(result), status_code

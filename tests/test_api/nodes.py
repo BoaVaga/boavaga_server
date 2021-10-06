@@ -7,6 +7,26 @@ class Upload(Scalar):
     pass
 
 
+class Point(Scalar):
+    def __to_graphql_input__(cls, value, indent=0, indent_string='  '):
+        return ''.join(('"', str(cls), '"'))
+
+
+class Time(Scalar):
+    def __to_graphql_input__(cls, value, indent=0, indent_string='  '):
+        return cls.hour * 3600 + cls.minute * 60
+
+
+class Date(Scalar):
+    def __to_graphql_input__(cls, value, indent=0, indent_string='  '):
+        return ''.join(('"', cls.isoformat(), '"'))
+
+
+class Decimal(Scalar):
+    def __to_graphql_input__(cls, value, indent=0, indent_string='  '):
+        return str(cls)
+
+
 class UserTypeNode(Enum):
     __choices__ = ('SISTEMA', 'ESTACIONAMENTO')
 
@@ -59,6 +79,52 @@ class PedidoCadastroNode(Type):
     admin_estacio = AdminEstacioNode
 
 
+class HorarioPadraoNode(Type):
+    segundaAbr = Time
+    segundaFec = Time
+    tercaAbr = Time
+    tercaFec = Time
+    quartaAbr = Time
+    quartaFec = Time
+    quintaAbr = Time
+    quintaFec = Time
+    sextaAbr = Time
+    sextaFec = Time
+    sabadoAbr = Time
+    sabadoFec = Time
+    domingoAbr = Time
+    domingoFec = Time
+
+
+class ValorHoraNode(Type):
+    id = ID
+    valor = Decimal
+    veiculo = String
+
+
+class HorarioDivergenteNode(Type):
+    id = ID
+    data = Date
+    hora_abr = Time
+    hora_fec = Time
+
+
+class EstacionamentoNode(Type):
+    id = ID
+    nome = String
+    telefone = String
+    endereco = EnderecoNode
+    foto = String
+    esta_suspenso = Boolean
+    esta_aberto = Boolean
+    cadastro_terminado = Boolean
+    descricao = String
+    qtd_vaga_livre = Int
+    horario_padrao = HorarioPadraoNode
+    valores_hora = list_of(ValorHoraNode)
+    horas_divergentes = list_of(HorarioDivergenteNode)
+
+
 class CreateResNode(Type):
     success = Boolean
     error = String
@@ -83,11 +149,19 @@ class PedidoCadastroResListNode(Type):
     pedidos_cadastro = list_of(PedidoCadastroNode)
 
 
+class PedidoCadAcceptResNode(Type):
+    success = Boolean
+    error = String
+    estacionamento = EstacionamentoNode
+
+
 class Mutation(Type):
     login = Field(LoginResNode, args={'tipo': UserTypeNode, 'email': String, 'senha': String})
     create_admin_sistema = Field(CreateResNode, args={'nome': String, 'email': String, 'senha': String})
     create_pedido_cadastro = Field(PedidoCadastroResNode, args={'nome': String, 'telefone': String,
                                                                 'endereco': EnderecoNode, 'foto': Upload})
+    accept_pedido_cadastro = Field(PedidoCadAcceptResNode, args={'pedido_id': ID, 'coordenadas': Point})
+    test_mut = Field(LoginResNode, args={'tempo': Time, 'data': Date, 'valor': Decimal, 'cord': Point})
 
 
 class Query(Type):

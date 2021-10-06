@@ -6,6 +6,10 @@ schema {
 }
 
 scalar Upload
+scalar Point
+scalar Time
+scalar Date
+scalar Decimal
 
 enum UserType {
     SISTEMA,
@@ -14,11 +18,6 @@ enum UserType {
 
 enum EstadosEnum {
     AC, AL, AP, AM, BA, CE, DF, ES, GO, MA, MT, MS, MG, PA, PB, PR, PE, PI, RJ, RN, RS, RO, RR, SC, SP, SE, TO
-}
-
-type BaseResult {
-    success: Boolean!,
-    error: String
 }
 
 type AdminSistema {
@@ -39,6 +38,52 @@ type PedidoCadastro {
     endereco: Endereco!,
     foto: String!,
     adminEstacio: AdminEstacio
+}
+
+type HorarioPadrao {
+    segundaAbr: Time,
+    segundaFec: Time,
+    tercaAbr: Time,
+    tercaFec: Time,
+    quartaAbr: Time,
+    quartaFec: Time,
+    quintaAbr: Time,
+    quintaFec: Time,
+    sextaAbr: Time,
+    sextaFec: Time,
+    sabadoAbr: Time,
+    sabadoFec: Time,
+    domingoAbr: Time,
+    domingoFec: Time
+}
+
+type ValorHora {
+    id: ID!,
+    valor: Decimal!,
+    veiculo: String!
+}
+
+type HorarioDivergente {
+    id: ID!,
+    data: Date!,
+    horaAbr: Time!,
+    horaFec: Time!
+}
+
+type Estacionamento {
+    id: ID!,
+    nome: String!,
+    telefone: String!,
+    endereco: Endereco!,
+    foto: String!,
+    estaSuspenso: Boolean!,
+    estaAberto: Boolean!,
+    cadastroTerminado: Boolean!,
+    descricao: String,
+    qtdVagaLivre: Int!,
+    horarioPadrao: HorarioPadrao!,
+    valoresHora: [ValorHora]!,
+    horasDivergentes: [HorarioDivergente]!
 }
 
 type Endereco {
@@ -84,10 +129,17 @@ type PedidoCadastroResList {
     pedidosCadastro: [PedidoCadastro]
 }
 
+type PedidoCadAcceptRes {
+    success: Boolean!,
+    error: String,
+    estacionamento: Estacionamento
+}
+
 type Mutation {
     createAdminSistema(nome: String!, email: String!, senha: String!): BaseAdminSistemaRes!
     login(email: String!, senha: String!, tipo: UserType!): LoginRes!
     createPedidoCadastro(nome: String!, telefone: String!, endereco: EnderecoInput!, foto: Upload!): PedidoCadastroRes!
+    acceptPedidoCadastro(pedidoId: ID!, coordenadas: Point!): PedidoCadAcceptRes
 }
 
 type Query {

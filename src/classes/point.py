@@ -15,11 +15,11 @@ class Point:
         if s is None or s == '':
             return None
 
-        if not s.startswith('POINT(') or not s.endswith(')'):
-            raise AttributeError(f'Invalid point string: {s}')
+        s.lstrip('POINT').lstrip('(').rstrip(')')
+        parts = s.split(' ')
 
-        v = s[6:-1]
-        parts = v.split(' ')
+        if len(parts) != 2:
+            raise AttributeError(f'Invalid point string: {s}')
 
         return Point(Decimal(parts[0]), Decimal(parts[1]))
 
