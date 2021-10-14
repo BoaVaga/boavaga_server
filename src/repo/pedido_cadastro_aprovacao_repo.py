@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 
 from src.classes import UserSession, Point
 from src.enums import UserType
-from src.models import Estacionamento, PedidoCadastro, HorarioPadrao
+from src.models import Estacionamento, PedidoCadastro, HorarioPadrao, AdminEstacio
 
 
 class PedidoCadastroAprovacaoRepo:
@@ -26,7 +26,12 @@ class PedidoCadastroAprovacaoRepo:
                                  esta_suspenso=False, esta_aberto=False, cadastro_terminado=False, qtd_vaga_livre=0,
                                  horario_padrao=HorarioPadrao())
 
+        adm_estacio: AdminEstacio = pedido.admin_estacio
+        adm_estacio.admin_mestre = True
+        adm_estacio.estacionamento = estacio
+
         sess.add(estacio)
+        sess.delete(pedido)
         sess.commit()
 
         return True, estacio

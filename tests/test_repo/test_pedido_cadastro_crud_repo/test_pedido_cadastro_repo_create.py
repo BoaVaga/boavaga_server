@@ -3,6 +3,7 @@ from collections import namedtuple
 from unittest.mock import ANY
 
 from src.models import PedidoCadastro, Endereco
+from tests.factories.factory import EstacionamentoFactory
 from tests.test_repo.test_pedido_cadastro_crud_repo.base import BaseTestPedidoCadastroCrudRepo
 from tests.utils import get_adm_estacio
 
@@ -144,6 +145,24 @@ class TestPedidoCadastroCrudRepoCreate(BaseTestPedidoCadastroCrudRepo):
 
         self.uploader.upload.assert_not_called()
         self.image_processor.compress.assert_not_called()
+
+    def test_create_admin_already_has_estacio(self):
+        estacio = EstacionamentoFactory.create()
+
+        self.adm_estacio.estacionamento = estacio
+
+        for admin_mestre_var in [True, False]:
+            self.adm_estacio.admin_mestre = admin_mestre_var
+
+            success, error = self.repo.create(self.adm_estacio_sess, self.session, self.nome + 'x', self.telefone + '1',
+                                              self.endereco, self.fstream)
+
+            self.assertEqual(False, success, f'Success should be False on admin_mestre={admin_mestre_var}')
+            self.assertEqual('limite_pedido_atingido', error, f'Error should be "limite_pedido_atingido" '
+                                                              f'on admin_mestre={admin_mestre_var}')
+
+            self.uploader.upload.assert_not_called()
+            self.image_processor.compress.assert_not_called()
 
     def test_image_processing_fail(self):
         self.image_processor.compress.side_effect = Exception('Random error')

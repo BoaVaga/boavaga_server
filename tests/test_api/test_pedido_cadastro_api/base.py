@@ -85,7 +85,8 @@ class BaseTestPedidoCadastroApi(unittest.TestCase):
             dct['endereco_fk'] = endereco.id
         if 'adminEstacio' in dct:
             d = dct['adminEstacio']
-            admin_estacio = AdminEstacio(id=int(d['id']), email=d['email'], senha=pedido.admin_estacio.senha)
+            admin_estacio = AdminEstacio(id=int(d['id']), email=d['email'], senha=pedido.admin_estacio.senha,
+                                         admin_mestre=d['adminMestre'])
             dct['admin_estacio_fk'] = admin_estacio.id
 
             del dct['adminEstacio']

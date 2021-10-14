@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 from src.classes import UserSession, FileStream
 from src.container import Container
 from src.enums import UserType
-from src.models import Endereco, PedidoCadastro
+from src.models import Endereco, PedidoCadastro, AdminEstacio
 from src.services import Uploader, ImageProcessor
 from src.utils import validate_telefone
 
@@ -44,7 +44,10 @@ class PedidoCadastroCrudRepo:
                endereco: Endereco, foto: FileStream) -> Tuple[bool, Union[str, PedidoCadastro]]:
         if user_sess is None or user_sess.tipo != UserType.ESTACIONAMENTO:
             return False, self.ERRO_SEM_PERMISSAO
-        if sess.query(PedidoCadastro).filter(PedidoCadastro.admin_estacio_fk == user_sess.user_id).count() > 0:
+
+        adm: AdminEstacio = user_sess.user
+        if (adm.estacio_fk is not None
+                or sess.query(PedidoCadastro).filter(PedidoCadastro.admin_estacio_fk == adm.id).count() > 0):
             return False, self.LIMITE_PEDIDO_ERRO
 
         nome = nome.strip()

@@ -69,6 +69,7 @@ class AdminSistemaNode(Type):
 class AdminEstacioNode(Type):
     id = ID
     email = String
+    admin_mestre = Boolean
 
 
 class PedidoCadastroNode(Type):

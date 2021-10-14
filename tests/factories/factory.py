@@ -77,6 +77,7 @@ class AdminEstacioFactory(factory.alchemy.SQLAlchemyModelFactory):
     id = factory.Sequence(lambda x: x + 1)
     email = factory.Faker('email')
     senha = factory.LazyFunction(_random_password)
+    admin_mestre = False
 
     class Meta:
         model = AdminEstacio

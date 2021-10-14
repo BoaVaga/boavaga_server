@@ -1,5 +1,8 @@
+from typing import Tuple
+
 from src.enums import UserType
 from src.classes import UserSession
+from src.models import AdminEstacio, AdminSistema
 from tests.factories import AdminSistemaFactory, set_session, AdminEstacioFactory
 
 _nome = 'Test{}user'
@@ -16,11 +19,11 @@ def get_adm_estacio_login(repo_container, crypto, session, n=5741):
     return _general_get_login(repo_container, crypto, session, UserType.ESTACIONAMENTO, _email_est, n=n)
 
 
-def get_adm_sistema(crypto, session, n=5741):
+def get_adm_sistema(crypto, session, n=5741) -> Tuple[AdminSistema, UserSession]:
     return _general_get_adm(crypto, session, UserType.SISTEMA, _email_sis, n=n)
 
 
-def get_adm_estacio(crypto, session, n=5741):
+def get_adm_estacio(crypto, session, n=5741) -> Tuple[AdminEstacio, UserSession]:
     return _general_get_adm(crypto, session, UserType.ESTACIONAMENTO, _email_est, n=n)
 
 

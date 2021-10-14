@@ -56,13 +56,16 @@ class TestPedidoCadastroAprovacaoRepo(unittest.TestCase):
 
     def test_accept_ok(self):
         pedido: PedidoCadastro = self.pedidos[0]
+        pedido_id = str(pedido.id)
+        adm_estacio: AdminEstacio = pedido.admin_estacio
+
         cord = Point(x='30.475', y='-78.314')
         empty_hora_p = HorarioPadrao()
 
         endereco_copy = Endereco.from_dict(pedido.endereco.to_dict())
         endereco_copy.coordenadas = cord
 
-        success, estacio = self.repo.accept(self.adm_sis_sess, self.session, str(pedido.id), cord)
+        success, estacio = self.repo.accept(self.adm_sis_sess, self.session, pedido_id, cord)
 
         self.assertEqual(True, success, f'Success should be True. Error: {estacio}')
 
@@ -83,8 +86,17 @@ class TestPedidoCadastroAprovacaoRepo(unittest.TestCase):
         self.assertEqual(pedido.endereco_fk, estacio.endereco_fk, 'Endereco foreign keys should match')
         self.assertEqual(pedido.foto_fk, estacio.foto_fk, 'Foto foreign keys should match')
 
+        self.assertEqual(True, adm_estacio.admin_mestre, 'Admin estacio should be master')
+        self.assertEqual(estacio.id, adm_estacio.estacio_fk, 'Admin estacio foreign key should match estacio id')
+
         db_estacio = self.session.query(Estacionamento).get(estacio.id)
         self.assertEqual(estacio, db_estacio, 'Estacionamentos should match on db level')
+
+        db_pedido = self.session.query(PedidoCadastro).get(pedido_id)
+        self.assertIsNone(db_pedido, 'The Pedido should be deleted from the database')
+
+        db_adm_estacio = self.session.query(AdminEstacio).get(adm_estacio.id)
+        self.assertEqual(adm_estacio, db_adm_estacio, 'Admins estacio should match on db level')
 
     def test_accept_no_permission(self):
         _sessions = [self.adm_estacio_sess, None]

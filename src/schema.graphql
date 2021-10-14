@@ -29,6 +29,7 @@ type AdminSistema {
 type AdminEstacio {
     id: ID!,
     email: String!
+    adminMestre: Boolean!
 }
 
 type PedidoCadastro {
