@@ -43,6 +43,7 @@ class EnderecoNode(Type):
     bairro = String
     numero = String
     cep = String
+    coordenadas = Point
 
     def __to_graphql_input__(self, indent, indent_string):
         _attrs = ('logradouro', 'estado', 'cidade', 'bairro', 'numero', 'cep')

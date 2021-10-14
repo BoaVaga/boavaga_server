@@ -8,7 +8,7 @@ from src.container import Container
 from src.enums import UserType
 from src.models import AdminSistema
 from src.classes import UserSession
-from src.services import Crypto, Cached
+from src.services import Crypto
 
 
 class AdminSistemaRepo:
@@ -16,9 +16,8 @@ class AdminSistemaRepo:
     SEM_PERMISSAO = 'sem_permissao'
 
     @inject
-    def __init__(self, crypto: Crypto = Provide[Container.crypto], cached: Cached = Provide[Container.cached]):
+    def __init__(self, crypto: Crypto = Provide[Container.crypto]):
         self.crypto = crypto
-        self.cached = cached
 
     def create_admin(self, user_sess: UserSession, sess: Session, nome: str, email: str, senha: str)\
             -> Tuple[bool, Union[str, AdminSistema]]:

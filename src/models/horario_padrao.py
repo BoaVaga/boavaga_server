@@ -2,6 +2,7 @@ from sqlalchemy import Column, SmallInteger, Time
 from sqlalchemy.orm import relationship
 
 from src.models.base import Base
+from src.utils import time_from_total_seconds
 
 
 class HorarioPadrao(Base):
@@ -46,3 +47,15 @@ class HorarioPadrao(Base):
                 self.sexta_fec == other.sexta_fec and
                 self.sabado_fec == other.sabado_fec and
                 self.domingo_fec == other.domingo_fec)
+
+    @staticmethod
+    def from_dict(dct: dict):
+        _id = int(dct['id']) if 'id' in dct is not None else None
+        _kwargs = {'id': _id}
+
+        for dia in ('segunda', 'terca', 'quarta', 'quinta', 'sexta', 'sabado', 'domingo'):
+            for tipo in ['abr', 'fec']:
+                k = '_'.join((dia, tipo))
+                _kwargs[k] = time_from_total_seconds(int(dct[k])) if k in dct else None
+
+        return HorarioPadrao(**_kwargs)

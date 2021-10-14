@@ -52,6 +52,7 @@ class TestAuthRepo(unittest.TestCase):
     def tearDown(self) -> None:
         general_db_teardown(self.conn, self.outer_trans, self.session)
         self.cached.clear_all()
+        self.cached.close()
 
     def test_setup(self):
         admin_sis = self.session.query(AdminSistema).all()

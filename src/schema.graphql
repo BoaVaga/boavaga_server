@@ -93,7 +93,8 @@ type Endereco {
     cidade: String!,
     bairro: String!,
     numero: String!,
-    cep: String!
+    cep: String!,
+    coordenadas: Point
 }
 
 input EnderecoInput {

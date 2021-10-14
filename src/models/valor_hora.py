@@ -1,6 +1,9 @@
+from decimal import Decimal
+
 from sqlalchemy import Column, SmallInteger, Numeric, ForeignKey
 from sqlalchemy.orm import relationship
 
+from src.models.veiculo import Veiculo
 from src.models.base import Base
 
 
@@ -25,3 +28,11 @@ class ValorHora(Base):
                 self.valor == other.valor and
                 self.veiculo_fk == other.veiculo_fk and
                 self.estacio_fk == other.estacio_fk)
+
+    @staticmethod
+    def from_dict(dct: dict):
+        _id = int(dct['id']) if 'id' in dct is not None else None
+        valor = Decimal(dct['valor']) if 'valor' in dct else None
+        veiculo = Veiculo(nome=dct['veiculo']) if 'veiculo' in dct is not None else None
+
+        return ValorHora(id=_id, valor=valor, veiculo=veiculo)

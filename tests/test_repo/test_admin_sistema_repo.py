@@ -8,8 +8,7 @@ from src.classes import UserSession
 from src.repo import AdminSistemaRepo
 from src.services import Crypto
 from tests.factories import set_session, AdminSistemaFactory
-from tests.utils import make_general_db_setup, general_db_teardown, MockedCached, \
-    make_mocked_cached_provider, make_engine, make_savepoint
+from tests.utils import make_general_db_setup, general_db_teardown, make_engine, make_savepoint
 
 
 class TestAdminSistemaRepo(unittest.TestCase):
@@ -38,17 +37,12 @@ class TestAdminSistemaRepo(unittest.TestCase):
 
         make_savepoint(self.conn, self.session)
 
-        self.container.cached.override(make_mocked_cached_provider(self.container))
-        self.cached: MockedCached = self.container.cached()
-
         self.valid_user_sess = UserSession(UserType.SISTEMA, self.admin_sis[0].id)
 
         self.repo = AdminSistemaRepo()
 
     def tearDown(self) -> None:
         general_db_teardown(self.conn, self.outer_trans, self.session)
-
-        self.cached.clear_all()
 
     def test_setup(self):
         admin_sis = self.session.query(AdminSistema).all()

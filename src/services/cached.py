@@ -20,3 +20,6 @@ class Cached:
     @staticmethod
     def _gen_key_name(group: str, key: str) -> str:
         return group + ':' + key
+
+    def close(self):
+        self.client.close()

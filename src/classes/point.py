@@ -15,7 +15,7 @@ class Point:
         if s is None or s == '':
             return None
 
-        s.lstrip('POINT').lstrip('(').rstrip(')')
+        s = s.lstrip('POINT').lstrip('(').rstrip(')')
         parts = s.split(' ')
 
         if len(parts) != 2:

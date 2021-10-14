@@ -51,6 +51,7 @@ class TestAdminSistemaApi(unittest.TestCase):
         general_db_teardown(self.conn, self.outer_trans, self.session)
 
         self.container.cached().clear_all()
+        self.container.cached().close()
 
     def test_setup(self):
         self.assertEqual(True, self.login_success, f'Success should be True. Error: {self.login_token}')
