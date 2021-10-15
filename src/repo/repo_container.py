@@ -2,6 +2,7 @@ from typing import Optional, List
 
 from dependency_injector import containers, providers
 
+from src.repo.estacionamento_crud_repo import EstacionamentoCrudRepo
 from src.repo.pedido_cadastro_aprovacao_repo import PedidoCadastroAprovacaoRepo
 from src.repo.pedido_cadastro_repo import PedidoCadastroCrudRepo
 from src.repo.admin_sistema_repo import AdminSistemaRepo
@@ -19,6 +20,7 @@ class RepoContainer(containers.DeclarativeContainer):
         height_foto=config.pedido_cadastro.height_foto.as_int()
     )
     pedido_cadastro_aprovacao_repo = providers.Factory(PedidoCadastroAprovacaoRepo)
+    estacionamento_crud_repo = providers.Factory(EstacionamentoCrudRepo)
 
 
 def create_repo_container(config_filepath: str, extra_modules: Optional[List] = None):

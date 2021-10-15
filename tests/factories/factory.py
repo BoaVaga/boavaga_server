@@ -1,5 +1,6 @@
-import random
+from datetime import time
 from decimal import Decimal
+from random import randint, choice
 from uuid import uuid4
 
 import factory
@@ -7,6 +8,7 @@ import factory.fuzzy
 import faker.providers.phone_number.pt_BR
 import faker.providers.date_time
 
+from src.classes import ValorHoraInput
 from src.enums import EstadosEnum, UploadStatus
 from src.models import AdminSistema, AdminEstacio, Endereco, Upload, PedidoCadastro, Estacionamento, HorarioPadrao, \
     ValorHora, Veiculo, HorarioDivergente
@@ -27,10 +29,23 @@ class SimplePhoneProvider(faker.providers.phone_number.pt_BR.Provider):
 
 class CustomTimeProvider(faker.providers.date_time.Provider):
     def time_object(self, **kwargs):
-        _t = super().time_object()
-        _kw = {k: v for k, v in kwargs.items() if v is not None}
+        max_t = kwargs.get('max_time') or time(23, 59, 59)
+        min_t = kwargs.get('min_time') or time(0, 0, 1)
 
-        return _t.replace(**_kw)
+        hour = kwargs.get('hour') or (randint(min_t.hour, max_t.hour) if min_t.hour != max_t.hour else min_t.hour)
+        minute = kwargs.get('minute')
+        if minute is None:
+            min_minute = min_t.minute if hour == min_t.hour else 0
+            max_minute = max_t.minute if hour == max_t.hour else 59
+            minute = randint(min_minute, max_minute) if min_minute != max_minute else min_minute
+
+        second = kwargs.get('second')
+        if second is None:
+            min_second = min_t.second if minute == min_t.minute else 1
+            max_second = max_t.second if minute == max_t.minute else 59
+            second = randint(min_second, max_second) if min_second != max_second else min_second
+
+        return time(hour, minute, second)
 
 
 factory.Faker.add_provider(SimplePhoneProvider, locale='pt_BR')
@@ -43,23 +58,38 @@ def _random_password():
 
 def _from_enum(enum):
     def clb():
-        return random.choice(list(enum))
+        return choice(list(enum))
 
     return clb
 
 
 def _random_int(a, b):
     def clb():
-        return random.randint(a, b)
+        return randint(a, b)
 
     return clb
 
 
 def _random_decimal(a, b):
     def clb():
-        return Decimal(random.randint(a, b))
+        return Decimal(randint(a, b))
 
     return clb
+
+
+def _call_faker_prov(provider, **kwargs):
+    extra = kwargs
+    extra['locale'] = extra.get('locale')
+
+    return factory.Faker(provider).evaluate(None, None, extra)
+
+
+class ValorHoraInputFactory(factory.Factory):
+    veiculo_id = factory.Sequence(lambda x: str(x + 1))
+    valor = factory.LazyFunction(_random_decimal(10, 30))
+
+    class Meta:
+        model = ValorHoraInput
 
 
 class AdminSistemaFactory(factory.alchemy.SQLAlchemyModelFactory):
@@ -129,20 +159,20 @@ class PedidoCadastroFactory(factory.alchemy.SQLAlchemyModelFactory):
 
 class HorarioPadraoFactory(factory.alchemy.SQLAlchemyModelFactory):
     id = factory.Sequence(lambda x: x + 1)
-    segunda_abr = None
-    segunda_fec = None
-    terca_abr = None
-    terca_fec = None
-    quarta_abr = None
-    quarta_fec = None
-    quinta_abr = None
-    quinta_fec = None
-    sexta_abr = None
-    sexta_fec = None
-    sabado_abr = None
-    sabado_fec = None
-    domingo_abr = None
-    domingo_fec = None
+    segunda_abr = factory.Faker('time_object', second=0, max_time=time(hour=22))
+    segunda_fec = factory.LazyAttribute(lambda obj: _call_faker_prov('time_object', min_time=obj.segunda_abr, second=0))
+    terca_abr = factory.Faker('time_object', second=0, max_time=time(hour=22))
+    terca_fec = factory.LazyAttribute(lambda obj: _call_faker_prov('time_object', min_time=obj.terca_abr, second=0))
+    quarta_abr = factory.Faker('time_object', second=0, max_time=time(hour=22))
+    quarta_fec = factory.LazyAttribute(lambda obj: _call_faker_prov('time_object', min_time=obj.quarta_abr, second=0))
+    quinta_abr = factory.Faker('time_object', second=0, max_time=time(hour=22))
+    quinta_fec = factory.LazyAttribute(lambda obj: _call_faker_prov('time_object', min_time=obj.quinta_abr, second=0))
+    sexta_abr = factory.Faker('time_object', second=0, max_time=time(hour=22))
+    sexta_fec = factory.LazyAttribute(lambda obj: _call_faker_prov('time_object', min_time=obj.sexta_abr, second=0))
+    sabado_abr = factory.Faker('time_object', second=0, max_time=time(hour=22))
+    sabado_fec = factory.LazyAttribute(lambda obj: _call_faker_prov('time_object', min_time=obj.sabado_abr, second=0))
+    domingo_abr = factory.Faker('time_object', second=0, max_time=time(hour=22))
+    domingo_fec = factory.LazyAttribute(lambda obj: _call_faker_prov('time_object', min_time=obj.domingo_abr, second=0))
 
     class Meta:
         model = HorarioPadrao
