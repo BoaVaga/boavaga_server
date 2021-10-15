@@ -194,7 +194,8 @@ class EstacionamentoFactory(factory.alchemy.SQLAlchemyModelFactory):
     esta_aberto = True
     cadastro_terminado = True
     descricao = factory.Faker('paragraph')
-    qtd_vaga_livre = factory.LazyFunction(_random_int(0, 30))
+    qtd_vaga_livre = factory.LazyFunction(_random_int(0, 15))
+    total_vaga = factory.LazyFunction(_random_int(15, 30))
 
     endereco = factory.SubFactory(EnderecoFactory)
     foto = factory.SubFactory(UploadFactory)

@@ -24,7 +24,7 @@ class PedidoCadastroAprovacaoRepo:
 
         estacio = Estacionamento(nome=pedido.nome, telefone=pedido.telefone, endereco=pedido.endereco, foto=pedido.foto,
                                  esta_suspenso=False, esta_aberto=False, cadastro_terminado=False, qtd_vaga_livre=0,
-                                 horario_padrao=HorarioPadrao())
+                                 total_vaga=0, horario_padrao=HorarioPadrao())
 
         adm_estacio: AdminEstacio = pedido.admin_estacio
         adm_estacio.admin_mestre = True

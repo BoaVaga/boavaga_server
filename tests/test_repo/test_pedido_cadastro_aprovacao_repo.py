@@ -79,6 +79,7 @@ class TestPedidoCadastroAprovacaoRepo(unittest.TestCase):
         self.assertEqual(False, estacio.esta_aberto, 'Esta aberto should be False')
         self.assertEqual(False, estacio.cadastro_terminado, 'Cadastro terminado should be True')
         self.assertEqual(0, estacio.qtd_vaga_livre, 'Qtd vaga livre should start as 0')
+        self.assertEqual(0, estacio.total_vaga, 'Total vaga should start as 0')
 
         empty_hora_p.id = estacio.horap_fk
         self.assertEqual(empty_hora_p, estacio.horario_padrao, 'Horario padrao should be empty')

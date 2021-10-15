@@ -122,6 +122,7 @@ class EstacionamentoNode(Type):
     cadastro_terminado = Boolean
     descricao = String
     qtd_vaga_livre = Int
+    total_vaga = Int
     horario_padrao = HorarioPadraoNode
     valores_hora = list_of(ValorHoraNode)
     horas_divergentes = list_of(HorarioDivergenteNode)

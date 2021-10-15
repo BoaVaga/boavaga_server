@@ -82,6 +82,7 @@ type Estacionamento {
     cadastroTerminado: Boolean!,
     descricao: String,
     qtdVagaLivre: Int!,
+    totalVaga: Int!,
     horarioPadrao: HorarioPadrao!,
     valoresHora: [ValorHora]!,
     horasDivergentes: [HorarioDivergente]!

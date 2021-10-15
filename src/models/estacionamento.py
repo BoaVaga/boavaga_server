@@ -15,6 +15,7 @@ class Estacionamento(Base):
     descricao = Column(Text(), nullable=True)
     telefone = Column(String(20), nullable=False)
     qtd_vaga_livre = Column(SmallInteger(), nullable=False)
+    total_vaga = Column(SmallInteger(), nullable=False)
     horap_fk = Column(SmallInteger(), ForeignKey('horario_padrao.id'), nullable=False)
     endereco_fk = Column(SmallInteger(), ForeignKey('endereco.id'), nullable=False)
     foto_fk = Column(SmallInteger(), ForeignKey('upload.id'), nullable=False)
@@ -39,6 +40,7 @@ class Estacionamento(Base):
                 self.descricao == other.descricao and
                 self.telefone == other.telefone and
                 self.qtd_vaga_livre == other.qtd_vaga_livre and
+                self.total_vaga == other.total_vaga and
                 self.horap_fk == other.horap_fk and
                 self.endereco_fk == other.endereco_fk and
                 self.foto_fk == other.foto_fk)
