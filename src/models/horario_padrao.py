@@ -1,8 +1,12 @@
+from typing import Optional
+
 from sqlalchemy import Column, SmallInteger, Time
 from sqlalchemy.orm import relationship
 
 from src.models.base import Base
 from src.utils import time_from_total_seconds
+
+_DIAS = ('segunda', 'terca', 'quarta', 'quinta', 'sexta', 'sabado', 'domingo')
 
 
 class HorarioPadrao(Base):
@@ -53,9 +57,19 @@ class HorarioPadrao(Base):
         _id = int(dct['id']) if 'id' in dct is not None else None
         _kwargs = {'id': _id}
 
-        for dia in ('segunda', 'terca', 'quarta', 'quinta', 'sexta', 'sabado', 'domingo'):
+        for dia in _DIAS:
             for tipo in ['abr', 'fec']:
                 k = '_'.join((dia, tipo))
                 _kwargs[k] = time_from_total_seconds(int(dct[k])) if k in dct else None
 
         return HorarioPadrao(**_kwargs)
+
+    def validate(self) -> Optional[str]:
+        for dia in _DIAS:
+            abr, fec = getattr(self, '_'.join((dia, 'abr'))), getattr(self, '_'.join((dia, 'fec')))
+
+            if abr is not None and fec is not None:
+                if fec <= abr:
+                    return 'hora_padrao_fecha_antes_de_abrir'
+            elif abr is not None or fec is not None:
+                return 'hora_padrao_dia_incompleto'

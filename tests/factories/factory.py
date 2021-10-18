@@ -35,18 +35,23 @@ class CustomTimeProvider(faker.providers.date_time.Provider):
         hour = kwargs.get('hour') or (randint(min_t.hour, max_t.hour) if min_t.hour != max_t.hour else min_t.hour)
         minute = kwargs.get('minute')
         if minute is None:
-            min_minute = min_t.minute if hour == min_t.hour else 0
-            max_minute = max_t.minute if hour == max_t.hour else 59
-            minute = randint(min_minute, max_minute) if min_minute != max_minute else min_minute
+            min_minute = min_t.minute+1 if hour == min_t.hour else 0
+            max_minute = max_t.minute-1 if hour == max_t.hour else 58
+            minute = randint(min_minute, max_minute) if abs(min_minute - max_minute) > 1 else min_minute
 
         second = kwargs.get('second')
         if second is None:
-            min_second = min_t.second if minute == min_t.minute else 1
-            max_second = max_t.second if minute == max_t.minute else 59
-            second = randint(min_second, max_second) if min_second != max_second else min_second
+            min_second = min_t.second+1 if minute == min_t.minute else 1
+            max_second = max_t.second-1 if minute == max_t.minute else 58
+            second = randint(min_second, max_second) if abs(min_second - max_second) > 1 else min_second
 
-        return time(hour, minute, second)
+        t = time(hour, minute, second)
+        try:
+            assert min_t < t
+        except AssertionError:
+            pass
 
+        return t
 
 factory.Faker.add_provider(SimplePhoneProvider, locale='pt_BR')
 factory.Faker.add_provider(CustomTimeProvider)
