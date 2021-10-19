@@ -14,6 +14,7 @@ from tests.utils import make_engine, make_general_db_setup, make_savepoint, get_
 
 _DIAS = ('segunda', 'terca', 'quarta', 'quinta', 'sexta', 'sabado', 'domingo')
 
+
 class TestEstacionamentoCrudRepo(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
@@ -34,7 +35,7 @@ class TestEstacionamentoCrudRepo(unittest.TestCase):
         self.conn, self.outer_trans, self.session = make_general_db_setup(self.engine)
         set_session(self.session)  # Factories
 
-        self.estacios = EstacionamentoFactory.create_batch(10)
+        self.estacios = EstacionamentoFactory.create_batch(10, cadastro_terminado=False)
         self.veiculos = VeiculoFactory.create_batch(10)
 
         self.session.commit()
@@ -63,9 +64,10 @@ class TestEstacionamentoCrudRepo(unittest.TestCase):
         self.assertEqual(self.veiculos, veiculos)
 
     def _general_test_create_ok(self, adm_sess, estacio='def', horario_padrao='def', total_vaga='def', descricao='def',
-                                valores_hora='def'):
+                                valores_hora='def', estacio_id='def'):
         estacio = self.estacios[0] if estacio == 'def' else estacio
-        estacio_id = None if adm_sess.tipo == UserType.ESTACIONAMENTO else estacio.id
+        if estacio_id == 'def':
+            estacio_id = None if adm_sess.tipo == UserType.ESTACIONAMENTO else estacio.id
         horario_padrao = HorarioPadraoFactory.build() if horario_padrao == 'def' else horario_padrao
         total_vaga = 20 if total_vaga == 'def' else total_vaga
         descricao = 'Abobrinha com limão' if descricao == 'def' else descricao
@@ -89,7 +91,7 @@ class TestEstacionamentoCrudRepo(unittest.TestCase):
 
         self.assertEqual(True, ok, f'Success should be True. Error: {ret}')
         for k, v in to_keep.items():
-            self.assertEqual(v, getattr(ret, k), f'{k} should match')
+            self.assertEqual(v, getattr(ret, k), f'Estacio {k} should match')
 
         self.assertEqual(False, ret.esta_suspenso, 'Esta suspenso should be False')
         self.assertEqual(True, ret.esta_aberto, 'Esta aberto should be True')
@@ -132,6 +134,11 @@ class TestEstacionamentoCrudRepo(unittest.TestCase):
 
     def test_create_valores_hora_vazio(self):
         self._general_test_create_ok(self.adm_estacio_sess, valores_hora=None)
+
+    def test_create_ignore_estacio_id_with_adm_estacio(self):
+        estacio = self.estacios[0]
+        estacio_id = str(self.estacios[1].id)
+        self._general_test_create_ok(self.adm_estacio_sess, estacio=estacio, estacio_id=estacio_id)
 
     def test_create_fail_total_vaga_invalid(self):
         for t_vaga in [0, -1, -1234]:
@@ -204,6 +211,20 @@ class TestEstacionamentoCrudRepo(unittest.TestCase):
                                    valores_hora=valores)
 
         self.assertEqual('valor_hora_veiculo_nao_encontrado', ret, 'Error should be "valor_hora_veiculo_nao_encontrado"')
+        self.assertEqual(False, ok, 'Success should be False')
+
+    def test_create_no_permission(self):
+        ok, ret = self.repo.create(None, self.session, 5, HorarioPadraoFactory.build())
+
+        self.assertEqual('sem_permissao', ret, 'Error should be "sem_permissao"')
+        self.assertEqual(False, ok, 'Success should be False')
+
+    def test_create_estacio_already_finished(self):
+        self.estacios[0].cadastro_terminado = True
+
+        ok, ret = self.repo.create(self.adm_estacio_sess, self.session, 5, HorarioPadraoFactory.build())
+
+        self.assertEqual('cadastro_ja_terminado', ret, 'Error should be "cadastro_ja_terminado"')
         self.assertEqual(False, ok, 'Success should be False')
 
 

@@ -82,20 +82,20 @@ class PedidoCadastroNode(Type):
 
 
 class HorarioPadraoNode(Type):
-    segundaAbr = Time
-    segundaFec = Time
-    tercaAbr = Time
-    tercaFec = Time
-    quartaAbr = Time
-    quartaFec = Time
-    quintaAbr = Time
-    quintaFec = Time
-    sextaAbr = Time
-    sextaFec = Time
-    sabadoAbr = Time
-    sabadoFec = Time
-    domingoAbr = Time
-    domingoFec = Time
+    segunda_abr = Time
+    segunda_fec = Time
+    terca_abr = Time
+    terca_fec = Time
+    quarta_abr = Time
+    quarta_fec = Time
+    quinta_abr = Time
+    quinta_fec = Time
+    sexta_abr = Time
+    sexta_fec = Time
+    sabado_abr = Time
+    sabado_fec = Time
+    domingo_abr = Time
+    domingo_fec = Time
 
 
 class ValorHoraNode(Type):
@@ -152,10 +152,15 @@ class PedidoCadastroResListNode(Type):
     pedidos_cadastro = list_of(PedidoCadastroNode)
 
 
-class PedidoCadAcceptResNode(Type):
+class EstacioCadResNode(Type):
     success = Boolean
     error = String
     estacionamento = EstacionamentoNode
+
+
+class SimpleResponseNode(Type):
+    success = Boolean
+    error = String
 
 
 class Mutation(Type):
@@ -163,8 +168,12 @@ class Mutation(Type):
     create_admin_sistema = Field(CreateResNode, args={'nome': String, 'email': String, 'senha': String})
     create_pedido_cadastro = Field(PedidoCadastroResNode, args={'nome': String, 'telefone': String,
                                                                 'endereco': EnderecoNode, 'foto': Upload})
-    accept_pedido_cadastro = Field(PedidoCadAcceptResNode, args={'pedido_id': ID, 'coordenadas': Point})
-    test_mut = Field(LoginResNode, args={'tempo': Time, 'data': Date, 'valor': Decimal, 'cord': Point})
+    accept_pedido_cadastro = Field(EstacioCadResNode, args={'pedido_id': ID, 'coordenadas': Point})
+    finish_estacionamento_cadastro = Field(EstacioCadResNode,
+                                           args={'total_vaga': Int, 'horario_padrao': HorarioPadraoNode,
+                                                 'valores_hora': list_of(ValorHoraNode), 'estacio_id': ID,
+                                                 'descricao': String})
+    atualizar_qtd_vaga_livre = Field(SimpleResponseNode, args={'num_vaga': Int})
 
 
 class Query(Type):

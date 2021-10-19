@@ -14,6 +14,8 @@ class EstacionamentoCrudRepo:
     ERRO_DESC_GRANDE = 'descricao_muito_grande'
     ERRO_VALOR_HORA_NAO_POSITIVO = 'valor_hora_preco_nao_positivo'
     ERRO_VALOR_HORA_VEICULO_NAO_ENCONTRADO = 'valor_hora_veiculo_nao_encontrado'
+    ERRO_SEM_PERMISSAO = 'sem_permissao'
+    ERRO_CADASTRO_FINALIZADO = 'cadastro_ja_terminado'
 
     def create(
         self, user_sess: UserSession, sess: Session,
@@ -23,11 +25,17 @@ class EstacionamentoCrudRepo:
         estacio_id: Optional[str] = None,
         descricao: Optional[str] = None
     ) -> Tuple[bool, Union[str, Estacionamento]]:
+        if user_sess is None:
+            return False, self.ERRO_SEM_PERMISSAO
+
         adm = user_sess.user
         if user_sess.tipo == UserType.SISTEMA:
             estacio: Estacionamento = sess.query(Estacionamento).get(estacio_id)
         else:
             estacio: Estacionamento = adm.estacionamento
+
+        if estacio.cadastro_terminado:
+            return False, self.ERRO_CADASTRO_FINALIZADO
 
         if descricao is not None and len(descricao) > 2000:
             return False, self.ERRO_DESC_GRANDE
@@ -51,6 +59,7 @@ class EstacionamentoCrudRepo:
         estacio.total_vaga = estacio.qtd_vaga_livre = total_vaga
         estacio.descricao = descricao
         estacio.horario_padrao = horario_padrao
+        estacio.cadastro_terminado = True
 
         sess.commit()
 

@@ -52,6 +52,15 @@ class HorarioPadrao(Base):
                 self.sabado_fec == other.sabado_fec and
                 self.domingo_fec == other.domingo_fec)
 
+    def to_dict(self) -> dict:
+        dct = {}
+        for dia in _DIAS:
+            for tipo in ('abr', 'fec'):
+                k = '_'.join((dia, tipo))
+                dct[k] = getattr(self, k)
+
+        return dct
+
     @staticmethod
     def from_dict(dct: dict):
         _id = int(dct['id']) if 'id' in dct is not None else None

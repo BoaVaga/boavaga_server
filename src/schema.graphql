@@ -58,9 +58,31 @@ type HorarioPadrao {
     domingoFec: Time
 }
 
+input HorarioPadraoInput {
+    segundaAbr: Time,
+    segundaFec: Time,
+    tercaAbr: Time,
+    tercaFec: Time,
+    quartaAbr: Time,
+    quartaFec: Time,
+    quintaAbr: Time,
+    quintaFec: Time,
+    sextaAbr: Time,
+    sextaFec: Time,
+    sabadoAbr: Time,
+    sabadoFec: Time,
+    domingoAbr: Time,
+    domingoFec: Time
+}
+
 type ValorHora {
     id: ID!,
     valor: Decimal!,
+    veiculo: String!
+}
+
+input ValorHoraInput {
+    valor: Decimal!
     veiculo: String!
 }
 
@@ -132,17 +154,25 @@ type PedidoCadastroResList {
     pedidosCadastro: [PedidoCadastro]
 }
 
-type PedidoCadAcceptRes {
+type EstacioCadRes {
     success: Boolean!,
     error: String,
     estacionamento: Estacionamento
+}
+
+type SimpleResponse {
+    success: Boolean!
+    error: String
 }
 
 type Mutation {
     createAdminSistema(nome: String!, email: String!, senha: String!): BaseAdminSistemaRes!
     login(email: String!, senha: String!, tipo: UserType!): LoginRes!
     createPedidoCadastro(nome: String!, telefone: String!, endereco: EnderecoInput!, foto: Upload!): PedidoCadastroRes!
-    acceptPedidoCadastro(pedidoId: ID!, coordenadas: Point!): PedidoCadAcceptRes
+    acceptPedidoCadastro(pedidoId: ID!, coordenadas: Point!): EstacioCadRes
+    finishEstacionamentoCadastro(totalVaga: Int!, horarioPadrao: HorarioPadraoInput!, valoresHora: [ValorHoraInput],
+        estacioId: ID, descricao: String): EstacioCadRes
+    atualizarQtdVagaLivre(numVaga: Int!): SimpleResponse!
 }
 
 type Query {

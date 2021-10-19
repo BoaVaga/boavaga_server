@@ -3,4 +3,5 @@ from src.repo.admin_sistema_repo import AdminSistemaRepo
 from src.repo.estacionamento_crud_repo import EstacionamentoCrudRepo
 from src.repo.pedido_cadastro_aprovacao_repo import PedidoCadastroAprovacaoRepo
 from src.repo.pedido_cadastro_repo import PedidoCadastroCrudRepo
+from src.repo.estacionamento_others_repo import EstacionamentoOthersRepo
 from src.repo.repo_container import RepoContainer

@@ -7,6 +7,7 @@ from sgqlc.operation import Operation
 from sgqlc.types import Variable, Arg, non_null
 
 from src.enums import UploadStatus
+from src.classes import *  # Avoid circular imports
 from src.models import PedidoCadastro, Endereco, Upload
 from tests.factories import EnderecoFactory
 from tests.test_api.nodes import Mutation, Upload as UploadType
