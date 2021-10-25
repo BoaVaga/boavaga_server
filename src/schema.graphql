@@ -83,7 +83,7 @@ type ValorHora {
 
 input ValorHoraInput {
     valor: Decimal!
-    veiculo: String!
+    veiculoId: ID!
 }
 
 type HorarioDivergente {
@@ -160,6 +160,12 @@ type EstacioCadRes {
     estacionamento: Estacionamento
 }
 
+type EstacioListRes {
+    success: Boolean!,
+    error: String,
+    estacionamentos: [Estacionamento!]
+}
+
 type SimpleResponse {
     success: Boolean!
     error: String
@@ -178,4 +184,5 @@ type Mutation {
 type Query {
     getPedidoCadastro(pedidoId: ID!): PedidoCadastroRes!
     listPedidoCadastro(amount: Int, index: Int): PedidoCadastroResList!
+    buscarEstacio(coordenadas: Point!): EstacioListRes!
 }

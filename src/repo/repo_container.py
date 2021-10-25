@@ -2,6 +2,7 @@ from typing import Optional, List
 
 from dependency_injector import containers, providers
 
+from src.repo.buscar_estacio_repo import BuscarEstacioRepo
 from src.repo.estacionamento_others_repo import EstacionamentoOthersRepo
 from src.repo.estacionamento_crud_repo import EstacionamentoCrudRepo
 from src.repo.pedido_cadastro_aprovacao_repo import PedidoCadastroAprovacaoRepo
@@ -23,6 +24,10 @@ class RepoContainer(containers.DeclarativeContainer):
     pedido_cadastro_aprovacao_repo = providers.Factory(PedidoCadastroAprovacaoRepo)
     estacionamento_crud_repo = providers.Factory(EstacionamentoCrudRepo)
     estacionamento_others_repo = providers.Factory(EstacionamentoOthersRepo)
+    buscar_estacio_repo = providers.Factory(
+        BuscarEstacioRepo,
+        distancia=config.busca_estacio.distancia.as_int()
+    )
 
 
 def create_repo_container(config_filepath: str, extra_modules: Optional[List] = None):

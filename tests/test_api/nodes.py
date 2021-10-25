@@ -104,6 +104,11 @@ class ValorHoraNode(Type):
     veiculo = String
 
 
+class ValorHoraInputNode(Type):
+    valor = Decimal
+    veiculo_id = ID
+
+
 class HorarioDivergenteNode(Type):
     id = ID
     data = Date
@@ -171,7 +176,7 @@ class Mutation(Type):
     accept_pedido_cadastro = Field(EstacioCadResNode, args={'pedido_id': ID, 'coordenadas': Point})
     finish_estacionamento_cadastro = Field(EstacioCadResNode,
                                            args={'total_vaga': Int, 'horario_padrao': HorarioPadraoNode,
-                                                 'valores_hora': list_of(ValorHoraNode), 'estacio_id': ID,
+                                                 'valores_hora': list_of(ValorHoraInputNode), 'estacio_id': ID,
                                                  'descricao': String})
     atualizar_qtd_vaga_livre = Field(SimpleResponseNode, args={'num_vaga': Int})
 

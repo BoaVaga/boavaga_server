@@ -12,6 +12,7 @@ from flask import Flask
 from src.api.base import BaseApi
 from src.classes import Point
 from src.enums import GRAPHQL_SCHEMA_ENUMS
+from src.utils import time_from_total_seconds
 
 
 def _get_scalars():
@@ -38,7 +39,7 @@ def _get_scalars():
 
     @time_scalar.value_parser
     def parse_time(value):
-        return datetime.time(second=value) if value is not None else None
+        return time_from_total_seconds(value) if value is not None else None
 
     # Date
 

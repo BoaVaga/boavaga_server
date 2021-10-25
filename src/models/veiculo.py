@@ -17,3 +17,6 @@ class Veiculo(Base):
 
         return (self.id == other.id and
                 self.nome == other.nome)
+
+    def __repr__(self):
+        return self.nome

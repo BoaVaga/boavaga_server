@@ -69,7 +69,7 @@ class HorarioPadrao(Base):
         for dia in _DIAS:
             for tipo in ['abr', 'fec']:
                 k = '_'.join((dia, tipo))
-                _kwargs[k] = time_from_total_seconds(int(dct[k])) if k in dct else None
+                _kwargs[k] = dct[k] if k in dct else None
 
         return HorarioPadrao(**_kwargs)
 

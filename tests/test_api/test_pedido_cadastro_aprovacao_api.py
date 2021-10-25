@@ -11,6 +11,7 @@ from src.classes import Point
 from src.container import create_container
 from src.models import Endereco, HorarioDivergente, HorarioPadrao, ValorHora, Estacionamento
 from src.repo.repo_container import create_repo_container
+from src.utils import time_from_total_seconds
 from tests.factories.factory import EstacionamentoFactory
 from tests.test_api.nodes import Mutation
 from tests.utils import general_db_teardown, make_savepoint, get_adm_sistema_login, make_general_db_setup, \
@@ -120,7 +121,8 @@ class TestAdminSistemaApi(unittest.TestCase):
         if 'horas_divergentes' in dct:
             horas_divergentes = [HorarioDivergente.from_dict(convert_dct_snake_case(d)) for d in dct['horas_divergentes']]
         if 'horario_padrao' in dct:
-            hora_padrao = HorarioPadrao.from_dict(convert_dct_snake_case(dct['horario_padrao']))
+            d = {k: time_from_total_seconds(t) if t is not None else None for k, t in dct['horario_padrao'].items()}
+            hora_padrao = HorarioPadrao.from_dict(convert_dct_snake_case(d))
         if 'valores_hora' in dct:
             valores_hora = [ValorHora.from_dict(d) for d in dct['valores_hora']]
 

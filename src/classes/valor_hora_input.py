@@ -13,7 +13,7 @@ class ValorHoraInput:
 
     @staticmethod
     def from_dict(dct: dict):
-        return ValorHoraInput(dct.get('veiculo_id'), Decimal(dct['valor']) if 'valor' in Decimal else None)
+        return ValorHoraInput(dct.get('veiculo_id'), Decimal(dct['valor']) if 'valor' in dct else None)
 
     def to_valor_hora(self, sess: Session) -> ValorHora:
         if self.valor <= 0:

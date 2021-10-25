@@ -16,6 +16,7 @@ class EstacionamentoCrudRepo:
     ERRO_VALOR_HORA_VEICULO_NAO_ENCONTRADO = 'valor_hora_veiculo_nao_encontrado'
     ERRO_SEM_PERMISSAO = 'sem_permissao'
     ERRO_CADASTRO_FINALIZADO = 'cadastro_ja_terminado'
+    ERRO_ESTACIO_NAO_ENCONTRADO = 'estacio_nao_encontrado'
 
     def create(
         self, user_sess: UserSession, sess: Session,
@@ -33,6 +34,9 @@ class EstacionamentoCrudRepo:
             estacio: Estacionamento = sess.query(Estacionamento).get(estacio_id)
         else:
             estacio: Estacionamento = adm.estacionamento
+
+        if estacio is None:
+            return False, self.ERRO_ESTACIO_NAO_ENCONTRADO
 
         if estacio.cadastro_terminado:
             return False, self.ERRO_CADASTRO_FINALIZADO

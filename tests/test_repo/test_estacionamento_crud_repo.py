@@ -227,6 +227,20 @@ class TestEstacionamentoCrudRepo(unittest.TestCase):
         self.assertEqual('cadastro_ja_terminado', ret, 'Error should be "cadastro_ja_terminado"')
         self.assertEqual(False, ok, 'Success should be False')
 
+    def test_create_estacio_not_found_adm_estacio(self):
+        self.adm_estacio.estacionamento = None
+
+        ok, ret = self.repo.create(self.adm_estacio_sess, self.session, 5, HorarioPadraoFactory.build())
+
+        self.assertEqual('estacio_nao_encontrado', ret, 'Error should be "estacio_nao_encontrado"')
+        self.assertEqual(False, ok, 'Success should be False')
+
+    def test_create_estacio_not_found_adm_sis(self):
+        ok, ret = self.repo.create(self.adm_sis_sess, self.session, 5, HorarioPadraoFactory.build())
+
+        self.assertEqual('estacio_nao_encontrado', ret, 'Error should be "estacio_nao_encontrado"')
+        self.assertEqual(False, ok, 'Success should be False')
+
 
 if __name__ == '__main__':
     unittest.main()
