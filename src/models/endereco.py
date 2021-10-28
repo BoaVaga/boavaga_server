@@ -39,6 +39,15 @@ class Endereco(Base):
                 self.cep == other.cep and
                 self.coordenadas == other.coordenadas)
 
+    def update(self, other):
+        self.logradouro = other.logradouro
+        self.estado = other.estado
+        self.cidade = other.cidade
+        self.bairro = other.bairro
+        self.numero = other.numero
+        self.cep = other.cep
+        self.coordenadas = other.coordenadas
+
     def to_dict(self):
         cord_str = str(self.coordenadas) if self.coordenadas is not None else None
 

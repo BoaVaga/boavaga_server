@@ -19,7 +19,8 @@ class RepoContainer(containers.DeclarativeContainer):
     pedido_cadastro_crud_repo = providers.Factory(
         PedidoCadastroCrudRepo,
         width_foto=config.pedido_cadastro.width_foto.as_int(),
-        height_foto=config.pedido_cadastro.height_foto.as_int()
+        height_foto=config.pedido_cadastro.height_foto.as_int(),
+        limite_tentativas=config.pedido_cadastro.limite_tentativas.as_int()
     )
     pedido_cadastro_aprovacao_repo = providers.Factory(PedidoCadastroAprovacaoRepo)
     estacionamento_crud_repo = providers.Factory(EstacionamentoCrudRepo)

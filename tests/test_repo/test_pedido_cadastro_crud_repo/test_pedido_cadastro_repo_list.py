@@ -71,13 +71,29 @@ class TestPedidoCadastroCrudRepoList(BaseTestPedidoCadastroCrudRepo):
             self.assertEqual('pedido_nao_encontrado', error, f'Error should be "pedido_nao_encontrado" on {i}')
 
     def test_get_no_permission(self):
-        _sessions = [self.adm_estacio_sess, None]
+        _sessions = [None]
 
         for i in range(len(_sessions)):
             success, error = self.repo.get(_sessions[i], self.session, str(self.pedidos[0].id))
 
             self.assertEqual(False, success, f'Success should be False on {i}')
             self.assertEqual('sem_permissao', error, f'Error should be "sem_permissao" on {i}')
+
+    def test_get_adm_estacio_ok(self):
+        real_pedido = self.pedidos[0]
+
+        for pedido_id in [None, str(self.pedidos[1].id), 'afsdasdasd', '65156474']:
+            success, pedido = self.repo.get(self.adm_estacio_edit_sess, self.session, pedido_id=pedido_id)
+
+            self.assertEqual(True, success, f'Success should be True. Error: {pedido}')
+            self.assertEqual(real_pedido, pedido, 'Pedidos should match')
+
+    def test_get_adm_estacio_no_pedido(self):
+        for pedido_id in [None, 'afsdasdasd', '65156474']:
+            success, error = self.repo.get(self.adm_estacio_sess, self.session, pedido_id=pedido_id)
+
+            self.assertEqual(False, success, 'Success should be False')
+            self.assertEqual('sem_pedido', error, 'Error should be "sem_pedido"')
 
 
 if __name__ == '__main__':

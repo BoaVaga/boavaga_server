@@ -1,4 +1,5 @@
 import logging
+from typing import Optional
 
 import flask
 from ariadne import convert_kwargs_to_snake_case
@@ -90,7 +91,7 @@ class PedidoCadastroApi(BaseApi):
             }
 
     @convert_kwargs_to_snake_case
-    def get_resolver(self, _, info, pedido_id: str):
+    def get_resolver(self, _, info, pedido_id: Optional[str] = None):
         sess: Session = flask.g.session
         user_sess = self.get_user_session(sess, self.cached, info)
 

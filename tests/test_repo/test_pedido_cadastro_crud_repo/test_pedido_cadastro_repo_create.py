@@ -2,6 +2,7 @@ import unittest
 from collections import namedtuple
 from unittest.mock import ANY
 
+from src.classes import *  # To avoid cyclic imports
 from src.models import PedidoCadastro, Endereco
 from tests.factories.factory import EstacionamentoFactory
 from tests.test_repo.test_pedido_cadastro_crud_repo.base import BaseTestPedidoCadastroCrudRepo

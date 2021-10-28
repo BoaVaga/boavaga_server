@@ -185,7 +185,7 @@ type Mutation {
 }
 
 type Query {
-    getPedidoCadastro(pedidoId: ID!): PedidoCadastroRes!
+    getPedidoCadastro(pedidoId: ID): PedidoCadastroRes!
     listPedidoCadastro(amount: Int, index: Int): PedidoCadastroResList!
     buscarEstacio(coordenadas: Point!): EstacioListRes!
 }

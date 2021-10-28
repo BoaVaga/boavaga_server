@@ -14,6 +14,7 @@ class AdminEstacio(Base):  # IUser
     estacio_fk = Column(SmallInteger(), ForeignKey('estacionamento.id'), nullable=True)
 
     estacionamento = relationship('Estacionamento')
+    pedido_cadastro = relationship('PedidoCadastro', back_populates='admin_estacio', uselist=False)
 
     def __eq__(self, other):
         if self is other:

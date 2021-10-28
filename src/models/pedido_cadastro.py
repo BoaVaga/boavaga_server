@@ -20,7 +20,7 @@ class PedidoCadastro(Base):
 
     endereco = relationship('Endereco')
     foto = relationship('Upload')
-    admin_estacio = relationship('AdminEstacio')
+    admin_estacio = relationship('AdminEstacio', back_populates='pedido_cadastro', uselist=False)
 
     def __eq__(self, other):
         if self is other:

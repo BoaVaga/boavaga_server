@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 from typing import Tuple, Union
 
@@ -11,7 +12,7 @@ class LocalUploader(Uploader):
     def __init__(self, base_path: str):
         self.base_path = Path(base_path)
 
-    def upload(self, fstream: FileStream, sub_group: str, name: str) -> Tuple[bool, Union[str, Upload]]:
+    def upload(self, fstream: FileStream, sub_group: str, name: str) -> Upload:
         if fstream is None:
             raise AttributeError('fstream can not be None')
         if not sub_group:
@@ -19,13 +20,13 @@ class LocalUploader(Uploader):
         if not name:
             raise AttributeError('name can not be an empty string or None')
 
-        try:
-            final_path = self.base_path / sub_group / name
+        final_path = self.base_path / sub_group / name
 
-            with open(final_path, mode='wb') as f:
-                f.write(fstream.read())
+        with open(final_path, mode='wb') as f:
+            f.write(fstream.read())
 
-            return True, Upload(nome_arquivo=name, sub_dir=sub_group, status=UploadStatus.CONCLUIDO)
-        except IOError:
-            return False, 'write_file_error'
+        return Upload(nome_arquivo=name, sub_dir=sub_group, status=UploadStatus.CONCLUIDO)
 
+    def delete(self, upload: Upload):
+        final_path = self.base_path / upload.sub_group / upload.name
+        os.remove(final_path)
