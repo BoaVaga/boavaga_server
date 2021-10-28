@@ -12,7 +12,7 @@ from src.container import create_container
 from src.models import Endereco, HorarioDivergente, HorarioPadrao, ValorHora, Estacionamento
 from src.repo.repo_container import create_repo_container
 from src.utils import time_from_total_seconds
-from tests.factories.factory import EstacionamentoFactory
+from tests.factories.factory import EstacionamentoFactory, PedidoCadastroFactory
 from tests.test_api.nodes import Mutation
 from tests.utils import general_db_teardown, make_savepoint, get_adm_sistema_login, make_general_db_setup, \
     make_mocked_cached_provider, make_engine, convert_dct_snake_case
@@ -101,6 +101,43 @@ class TestAdminSistemaApi(unittest.TestCase):
             self.assertEqual(error, data['error'], f'Error should be "{error}"')
             self.assertEqual(False, data['success'], f'Success should be False on "{error}"')
             self.assertIsNone(data['estacionamento'], f'Estacionamento should be None on "{error}"')
+
+    def test_reject_ok(self):
+        # reject_pedido_cadastro
+        pedido_id, msg = '123', 'Sla, estou com preguiça de pensar em algo, então vai só isso mesmo e já era :)'
+
+        self.repo.reject.return_value = (True, None)
+
+        mutation = Operation(Mutation)
+        mutation.reject_pedido_cadastro(pedido_id=pedido_id, motivo=msg)
+
+        response = self.client.post('/graphql', json={'query': mutation.__to_graphql__(auto_select_depth=5)})
+        data = self._check_response(response, 'rejectPedidoCadastro')
+
+        self.assertIsNone(data['error'], 'Error should be null')
+        self.assertEqual(True, data['success'], 'Success should be True')
+
+        self.repo.reject.assert_called_once_with(self.user_sess, ANY, pedido_id, msg)
+
+    def test_reject_error(self):
+        pedido_id, msg = '123', 'Sla, estou com preguiça de pensar em algo, então vai só isso mesmo e já era :)'
+
+        for error in ['sem_permissao', 'pedido_nao_encontrado', None]:
+            self.repo.reject.reset_mock()
+            if error is None:
+                self.repo.reject.side_effect = Exception('Random Error')
+                error = 'erro_desconhecido'
+            else:
+                self.repo.reject.return_value = (False, error)
+
+            mutation = Operation(Mutation)
+            mutation.reject_pedido_cadastro(pedido_id=pedido_id, motivo=msg)
+
+            response = self.client.post('/graphql', json={'query': mutation.__to_graphql__(auto_select_depth=5)})
+            data = self._check_response(response, 'rejectPedidoCadastro')
+
+            self.assertEqual(error, data['error'], f'Error should be "{error}"')
+            self.assertEqual(False, data['success'], f'Success should be False on "{error}"')
 
     def _check_response(self, response, group, i=0):
         self.assertEqual(200, response.status_code, 'Should return a 200 OK code')

@@ -19,7 +19,10 @@ class PedidoCadastroAprovacaoApi(BaseApi):
         self.cached = cached
 
         queries = {}
-        mutations = {'acceptPedidoCadastro': self.accept_resolver}
+        mutations = {
+            'acceptPedidoCadastro': self.accept_resolver,
+            'rejectPedidoCadastro': self.reject_resolver
+        }
 
         super().__init__(queries, mutations)
 
@@ -44,3 +47,19 @@ class PedidoCadastroAprovacaoApi(BaseApi):
                 'success': False,
                 'error': estacio_or_error
             }
+
+    @convert_kwargs_to_snake_case
+    def reject_resolver(self, _, info, pedido_id: str, motivo: str):
+        sess: Session = flask.g.session
+        user_sess = self.get_user_session(sess, self.cached, info)
+
+        try:
+            success, error = self.repo.reject(user_sess, sess, pedido_id, motivo)
+        except Exception as ex:
+            logging.getLogger(__name__).error('Error on reject_resolver', exc_info=ex)
+            success, error = False, 'erro_desconhecido'
+
+        return {
+            'success': success,
+            'error': error
+        }

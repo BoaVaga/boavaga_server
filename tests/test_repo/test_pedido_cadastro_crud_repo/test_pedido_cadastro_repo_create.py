@@ -39,6 +39,8 @@ class TestPedidoCadastroCrudRepoCreate(BaseTestPedidoCadastroCrudRepo):
             self.assertEqual(ret.tel, obj.telefone, f'Telefones should match on {i}')
             self.assertEqual(arg.endereco, obj.endereco, f'Enderecos should match on {i}')
             self.assertEqual(ret.user, obj.admin_estacio, f'Should set the admin estacio on {i}')
+            self.assertEqual(0, obj.num_rejeicoes, f'Num rejeicoes should start with 0 on {i}')
+            self.assertIsNone(obj.msg_rejeicao, f'Msg rejeicao should be null on {i}')
 
             self.image_processor.compress.assert_called_once_with(ret.img_proc_call, 100, 100)
             self.uploader.upload.assert_called_once_with(ret.upload_call, 'foto_estacio', ANY)

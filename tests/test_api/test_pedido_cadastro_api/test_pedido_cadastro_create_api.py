@@ -9,7 +9,7 @@ from sgqlc.types import Variable, Arg, non_null
 from src.enums import UploadStatus
 from src.classes import *  # Avoid circular imports
 from src.models import PedidoCadastro, Endereco, Upload
-from tests.factories import EnderecoFactory
+from tests.factories import EnderecoFactory, PedidoCadastroFactory
 from tests.test_api.nodes import Mutation, Upload as UploadType
 from tests.test_api.test_pedido_cadastro_api.base import BaseTestPedidoCadastroApi
 
@@ -23,8 +23,8 @@ class TestPedidoCadastroCreateApi(BaseTestPedidoCadastroApi):
         foto = Upload(nome_arquivo='abc.jpg', sub_dir='foto_estacio', status=UploadStatus.CONCLUIDO)
         foto_url = 'foto_estacio/abc.jpg'
 
-        self.repo.create.return_value = (True, PedidoCadastro(id=341, nome=nome, telefone=telefone, endereco=endereco,
-                                                              foto=foto))
+        self.repo.create.return_value = (True, PedidoCadastroFactory.build(id=341, nome=nome, telefone=telefone,
+                                                                           endereco=endereco, foto=foto))
 
         mutation = Operation(Mutation, variables={'foto': Arg(non_null(UploadType))})
         mutation.create_pedido_cadastro(nome=nome, telefone=telefone, endereco=endereco_dct, foto=Variable('foto'))
@@ -44,6 +44,8 @@ class TestPedidoCadastroCreateApi(BaseTestPedidoCadastroApi):
         self.assertEqual('341', pedido['id'], 'IDs should match')
         self.assertEqual(nome, pedido['nome'], 'Nomes should match')
         self.assertEqual(telefone, pedido['telefone'], 'Telefones should match')
+        self.assertEqual(0, pedido['numRejeicoes'], 'Num rejeicoes should be 0')
+        self.assertIsNone(pedido['msgRejeicao'], 'Msg rejeicao should be None')
 
         endereco_ret = pedido['endereco']
         self.assert_endereco_equal(endereco, endereco_ret)
@@ -143,8 +145,8 @@ class TestPedidoCadastroCreateApi(BaseTestPedidoCadastroApi):
                 end_obj = Endereco.from_dict(end_dct)
                 setattr(end_obj, attr, real_value)
 
-                self.repo.create.return_value = (True, PedidoCadastro(id=341, nome=nome, telefone=telefone,
-                                                                      endereco=end_obj, foto=foto))
+                self.repo.create.return_value = (True, PedidoCadastroFactory.build(id=341, nome=nome, telefone=telefone,
+                                                                                   endereco=end_obj, foto=foto))
 
                 mutation = Operation(Mutation, variables={'foto': Arg(non_null(UploadType))})
                 mutation.create_pedido_cadastro(nome='Teste', telefone='+5511981845155', endereco=end_dct,

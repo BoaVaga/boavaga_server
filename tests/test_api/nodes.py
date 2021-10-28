@@ -76,6 +76,8 @@ class PedidoCadastroNode(Type):
     id = ID
     nome = String
     telefone = String
+    num_rejeicoes = Int
+    msg_rejeicao = String
     endereco = EnderecoNode
     foto = String
     admin_estacio = AdminEstacioNode
@@ -174,6 +176,7 @@ class Mutation(Type):
     create_pedido_cadastro = Field(PedidoCadastroResNode, args={'nome': String, 'telefone': String,
                                                                 'endereco': EnderecoNode, 'foto': Upload})
     accept_pedido_cadastro = Field(EstacioCadResNode, args={'pedido_id': ID, 'coordenadas': Point})
+    reject_pedido_cadastro = Field(SimpleResponseNode, args={'pedido_id': ID, 'motivo': String})
     finish_estacionamento_cadastro = Field(EstacioCadResNode,
                                            args={'total_vaga': Int, 'horario_padrao': HorarioPadraoNode,
                                                  'valores_hora': list_of(ValorHoraInputNode), 'estacio_id': ID,

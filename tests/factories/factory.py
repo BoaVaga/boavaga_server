@@ -149,6 +149,8 @@ class PedidoCadastroFactory(factory.alchemy.SQLAlchemyModelFactory):
     id = factory.Sequence(lambda x: x + 1)
     nome = factory.Faker('name')
     telefone = factory.Faker('cellphone_number', locale='pt_BR', formatted=False)
+    msg_rejeicao = None
+    num_rejeicoes = 0
     endereco = factory.SubFactory(EnderecoFactory)
     foto = factory.SubFactory(UploadFactory)
     admin_estacio = factory.SubFactory(AdminEstacioFactory)

@@ -36,6 +36,7 @@ class TestPedidoCadastroAprovacaoRepo(unittest.TestCase):
         self.adm_estacio, self.adm_estacio_sess = get_adm_estacio(self.crypto, self.session)
 
         self.pedidos = PedidoCadastroFactory.create_batch(10)
+        self.pedidos.append(PedidoCadastroFactory.create(num_rejeicoes=2))
 
         self.session.commit()
         make_savepoint(self.conn, self.session)
@@ -110,6 +111,51 @@ class TestPedidoCadastroAprovacaoRepo(unittest.TestCase):
     def test_accept_pedido_not_found(self):
         for p_id in ['', '-123', '59841']:
             success, error = self.repo.accept(self.adm_sis_sess, self.session, p_id, Point(1, 1))
+
+            self.assertEqual('pedido_nao_encontrado', error, f'Error should be "pedido_nao_encontrado" for id {p_id}')
+            self.assertEqual(False, success, f'Success should be False for id {p_id}')
+
+    def test_reject_ok(self):
+        pedido: PedidoCadastro = self.pedidos[0]
+        pedido_id = str(pedido.id)
+        msg = 'Sla, estou com preguiça de pensar em algo, então vai só isso mesmo e já era :)'
+
+        success, error = self.repo.reject(self.adm_sis_sess, self.session, pedido_id, msg)
+        self.assertEqual(True, success, f'Success should be True. Error: {error}')
+        self.assertIsNone(error, 'Error should be None')
+
+        self.assertEqual(1, pedido.num_rejeicoes, 'Num rejeicoes should increase')
+        self.assertEqual(msg, pedido.msg_rejeicao, 'Should set the msg rejeicao')
+
+        db_pedido = self.session.query(PedidoCadastro).get(pedido_id)
+        self.assertEqual(pedido, db_pedido, 'Pedidos should match on db level')
+
+    def test_reject_ok_2(self):
+        pedido: PedidoCadastro = self.pedidos[-1]
+        pedido_id = str(pedido.id)
+        msg = '    Sla, estou com preguiça de pensar em algo, então vai só isso mesmo e já era :)    '
+
+        success, error = self.repo.reject(self.adm_sis_sess, self.session, pedido_id, msg)
+        self.assertEqual(True, success, f'Success should be True. Error: {error}')
+        self.assertIsNone(error, 'Error should be None')
+
+        self.assertEqual(3, pedido.num_rejeicoes, 'Num rejeicoes should increase')
+        self.assertEqual(msg.strip(), pedido.msg_rejeicao, 'Should set the msg rejeicao')
+
+        db_pedido = self.session.query(PedidoCadastro).get(pedido_id)
+        self.assertEqual(pedido, db_pedido, 'Pedidos should match on db level')
+
+    def test_reject_no_permission(self):
+        _sessions = [self.adm_estacio_sess, None]
+        for i in range(len(_sessions)):
+            success, error = self.repo.reject(_sessions[i], self.session, str(self.pedidos[0].id), 'Qualquer coisa')
+
+            self.assertEqual('sem_permissao', error, f'Error should be "sem_permissao" on {i}')
+            self.assertEqual(False, success, f'Success should be False on {i}')
+
+    def test_reject_pedido_not_found(self):
+        for p_id in ['', '-123', '59841']:
+            success, error = self.repo.reject(self.adm_sis_sess, self.session, p_id, 'Qualquer coisa')
 
             self.assertEqual('pedido_nao_encontrado', error, f'Error should be "pedido_nao_encontrado" for id {p_id}')
             self.assertEqual(False, success, f'Success should be False for id {p_id}')

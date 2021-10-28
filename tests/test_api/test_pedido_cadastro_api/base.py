@@ -12,7 +12,7 @@ from src.models import Endereco, PedidoCadastro, AdminEstacio
 from src.repo.repo_container import create_repo_container
 from tests.factories import PedidoCadastroFactory
 from tests.utils import make_engine, make_mocked_cached_provider, make_general_db_setup, get_adm_estacio_login, \
-    make_savepoint, general_db_teardown
+    make_savepoint, general_db_teardown, convert_dct_snake_case
 
 
 class BaseTestPedidoCadastroApi(unittest.TestCase):
@@ -93,6 +93,8 @@ class BaseTestPedidoCadastroApi(unittest.TestCase):
 
         pedido.foto_fk = None
         foto_str = str(pedido.foto)
+
+        dct = convert_dct_snake_case(dct)
 
         p_ret = PedidoCadastro(**dct)
         if msg is not None:

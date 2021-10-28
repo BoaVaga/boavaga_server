@@ -37,4 +37,16 @@ class PedidoCadastroAprovacaoRepo:
         return True, estacio
 
     def reject(self, user_sess: UserSession, sess: Session, pedido_id: str, motivo: str) -> Tuple[bool, Optional[str]]:
-        pass
+        if user_sess is None or user_sess.tipo != UserType.SISTEMA:
+            return False, self.ERRO_SEM_PERMISSAO
+
+        pedido: PedidoCadastro = sess.query(PedidoCadastro).get(pedido_id)
+        if pedido is None:
+            return False, self.ERRO_PEDIDO_NAO_ENCONTRADO
+
+        pedido.num_rejeicoes += 1
+        pedido.msg_rejeicao = motivo.strip()
+
+        sess.commit()
+
+        return True, None
