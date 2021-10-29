@@ -66,6 +66,9 @@ class TestPedidoCadastroCrudRepoEdit(BaseTestPedidoCadastroCrudRepo):
                 self.uploader.delete.assert_called_once_with(ori_upload)
 
                 self.assertEqual(ret_foto.foto, obj.foto, f'Foto should be the upload on {i}')
+
+                self.assertIsNone(self.session.query(Upload).get(ori_foto_id), f'Should remove the original foto '
+                                                                               f'from the db on {i}')
             else:
                 self.image_processor.compress.assert_not_called()
                 self.uploader.upload.assert_not_called()
@@ -138,6 +141,7 @@ class TestPedidoCadastroCrudRepoEdit(BaseTestPedidoCadastroCrudRepo):
 
     def test_edit_error_upload(self):
         self.uploader.upload.side_effect = Exception('Erro aleatorio')
+        ori_upload = self.copy_upload(self.pedidos[0].foto)
 
         success, error = self.repo.edit(self.adm_estacio_edit_sess, self.session, foto=self.fstream)
 
@@ -147,6 +151,9 @@ class TestPedidoCadastroCrudRepoEdit(BaseTestPedidoCadastroCrudRepo):
         self.image_processor.compress.assert_called_once_with(self.fstream, 100, 100)
         self.uploader.upload.assert_called_once_with(self.ret_fstream, 'foto_estacio', ANY)
         self.uploader.delete.assert_not_called()
+
+        foto = self.session.query(Upload).get(self.pedidos[0].foto_fk)
+        self.assertEqual(ori_upload, foto, 'Should not change the foto on the db')
 
     def test_edit_admin_has_no_pedido(self):
         success, error = self.repo.edit(self.adm_estacio_sess, self.session)

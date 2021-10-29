@@ -177,6 +177,7 @@ type Mutation {
     createAdminSistema(nome: String!, email: String!, senha: String!): BaseAdminSistemaRes!
     login(email: String!, senha: String!, tipo: UserType!): LoginRes!
     createPedidoCadastro(nome: String!, telefone: String!, endereco: EnderecoInput!, foto: Upload!): PedidoCadastroRes!
+    editPedidoCadastro(nome: String, telefone: String, endereco: EnderecoInput, foto: Upload): PedidoCadastroRes!
     acceptPedidoCadastro(pedidoId: ID!, coordenadas: Point!): EstacioCadRes!
     rejectPedidoCadastro(pedidoId: ID!, motivo: String!): SimpleResponse!
     finishEstacionamentoCadastro(totalVaga: Int!, horarioPadrao: HorarioPadraoInput!, valoresHora: [ValorHoraInput],

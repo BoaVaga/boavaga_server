@@ -29,7 +29,8 @@ class PedidoCadastroApi(BaseApi):
             'getPedidoCadastro': self.get_resolver
         }
         mutations = {
-            'createPedidoCadastro': self.create_resolver
+            'createPedidoCadastro': self.create_resolver,
+            'editPedidoCadastro': self.edit_resolver
         }
 
         super().__init__(queries, mutations)
@@ -45,10 +46,7 @@ class PedidoCadastroApi(BaseApi):
         val_res = end.validate()
 
         if val_res is not None:
-            return {
-                'success': False,
-                'error': val_res
-            }
+            return {'success': False, 'error': val_res}
 
         try:
             fstream = FlaskFileStream(foto)
@@ -58,15 +56,40 @@ class PedidoCadastroApi(BaseApi):
             success, error_or_pedido = False, self.ERRO_DESCONHECIDO
 
         if success:
-            return {
-                'success': True,
-                'pedido_cadastro': error_or_pedido
-            }
+            return {'success': True, 'pedido_cadastro': error_or_pedido}
         else:
-            return {
-                'success': False,
-                'error': error_or_pedido
-            }
+            return {'success': False, 'error': error_or_pedido}
+
+    @convert_kwargs_to_snake_case
+    def edit_resolver(self, _, info, nome: Optional[str] = None, telefone: Optional[str] = None,
+                      endereco: Optional[dict] = None, foto: Optional[FileStorage] = None):
+        sess: Session = flask.g.session
+        user_sess = self.get_user_session(sess, self.cached, info)
+
+        end = fstream = None
+
+        if endereco:
+            endereco = {k: v.strip() if isinstance(v, str) else v for k, v in endereco.items()}
+
+            end = Endereco.from_dict(endereco)
+            val_res = end.validate()
+
+            if val_res is not None:
+                return {'success': False, 'error': val_res}
+
+        try:
+            if foto:
+                fstream = FlaskFileStream(foto)
+
+            success, error_or_pedido = self.pedido_cad_crud_repo.edit(user_sess, sess, nome, telefone, end, fstream)
+        except Exception as ex:
+            logging.getLogger(__name__).error('Error on edit_resolver', exc_info=ex)
+            success, error_or_pedido = False, self.ERRO_DESCONHECIDO
+
+        if success:
+            return {'success': True, 'pedido_cadastro': error_or_pedido}
+        else:
+            return {'success': False, 'error': error_or_pedido}
 
     @convert_kwargs_to_snake_case
     def list_resolver(self, _, info, amount: int = 0, index: int = 0):
@@ -80,15 +103,9 @@ class PedidoCadastroApi(BaseApi):
             success, error_or_pedidos = False, self.ERRO_DESCONHECIDO
 
         if success:
-            return {
-                'success': True,
-                'pedidos_cadastro': error_or_pedidos
-            }
+            return {'success': True, 'pedidos_cadastro': error_or_pedidos}
         else:
-            return {
-                'success': False,
-                'error': error_or_pedidos
-            }
+            return {'success': False, 'error': error_or_pedidos}
 
     @convert_kwargs_to_snake_case
     def get_resolver(self, _, info, pedido_id: Optional[str] = None):
@@ -102,12 +119,6 @@ class PedidoCadastroApi(BaseApi):
             success, error_or_pedido = False, self.ERRO_DESCONHECIDO
 
         if success:
-            return {
-                'success': True,
-                'pedido_cadastro': error_or_pedido
-            }
+            return {'success': True, 'pedido_cadastro': error_or_pedido}
         else:
-            return {
-                'success': False,
-                'error': error_or_pedido
-            }
+            return {'success': False, 'error': error_or_pedido}

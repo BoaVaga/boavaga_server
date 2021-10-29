@@ -1,6 +1,5 @@
 import os
 from pathlib import Path
-from typing import Tuple, Union
 
 from src.classes import FileStream
 from src.enums import UploadStatus
@@ -28,5 +27,5 @@ class LocalUploader(Uploader):
         return Upload(nome_arquivo=name, sub_dir=sub_group, status=UploadStatus.CONCLUIDO)
 
     def delete(self, upload: Upload):
-        final_path = self.base_path / upload.sub_group / upload.name
+        final_path = self.base_path / upload.sub_dir / upload.nome_arquivo
         os.remove(final_path)

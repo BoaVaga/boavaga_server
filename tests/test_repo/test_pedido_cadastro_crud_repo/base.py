@@ -89,7 +89,7 @@ class BaseTestPedidoCadastroCrudRepo(unittest.TestCase):
 
     @staticmethod
     def copy_upload(base_upload: Upload) -> Upload:
-        return Upload(id=int(base_upload.id), nome_arquivo=str(base_upload.nome_arquivo),
+        return Upload(id=int(base_upload.id), nome_arquivo=base_upload.nome_arquivo,
                       sub_dir=str(base_upload.sub_dir), status=UploadStatus(base_upload.status.value))
 
 

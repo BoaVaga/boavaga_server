@@ -124,7 +124,10 @@ class PedidoCadastroCrudRepo:
             except Exception as ex:
                 logging.getLogger(__name__).error('edit(): Error while deleting uploaded file.', exc_info=ex)
 
+            ori_id = int(pedido.foto_fk)
             pedido.foto = upload_or_error
+
+            sess.query(Upload).filter(Upload.id == ori_id).delete()
 
         sess.commit()
 
