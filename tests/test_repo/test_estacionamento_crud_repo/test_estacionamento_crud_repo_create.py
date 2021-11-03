@@ -1,68 +1,17 @@
 import datetime
-import pathlib
 import unittest
 from decimal import Decimal
 
-from src.container import create_container
 from src.enums import UserType
-from src.models import AdminSistema, AdminEstacio, Estacionamento, Veiculo, ValorHora
-from src.repo import EstacionamentoCrudRepo
-from tests.factories import set_session, HorarioPadraoFactory, EstacionamentoFactory, VeiculoFactory, \
-    ValorHoraInputFactory
-from tests.utils import make_engine, make_general_db_setup, make_savepoint, get_adm_sistema, get_adm_estacio, \
-    general_db_teardown
+from src.models import Estacionamento, ValorHora
+from tests.factories import HorarioPadraoFactory, ValorHoraInputFactory
+from tests.test_repo.test_estacionamento_crud_repo.base import BaseTestEstacioCrudRepo
+
 
 _DIAS = ('segunda', 'terca', 'quarta', 'quinta', 'sexta', 'sabado', 'domingo')
 
 
-class TestEstacionamentoCrudRepo(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls) -> None:
-        config_path = str(pathlib.Path(__file__).parents[2] / 'test.ini')
-        cls.container = create_container(config_path)
-
-        conn_string = str(cls.container.config.get('db')['conn_string'])
-        cls.engine = make_engine(conn_string)
-
-    @classmethod
-    def tearDownClass(cls) -> None:
-        cls.engine.dispose()
-
-    def setUp(self) -> None:
-        self.maxDiff = 3000
-        self.crypto = self.container.crypto()
-
-        self.conn, self.outer_trans, self.session = make_general_db_setup(self.engine)
-        set_session(self.session)  # Factories
-
-        self.estacios = EstacionamentoFactory.create_batch(10, cadastro_terminado=False)
-        self.veiculos = VeiculoFactory.create_batch(10)
-
-        self.session.commit()
-
-        make_savepoint(self.conn, self.session)
-
-        self.adm_sis, self.adm_sis_sess = get_adm_sistema(self.crypto, self.session)
-        self.adm_estacio, self.adm_estacio_sess = get_adm_estacio(self.crypto, self.session)
-        self.adm_estacio.estacionamento = self.estacios[0]
-        self.adm_estacio.admin_mestre = True
-
-        self.repo = EstacionamentoCrudRepo()
-
-    def tearDown(self) -> None:
-        general_db_teardown(self.conn, self.outer_trans, self.session)
-
-    def test_setup(self):
-        admin_sis = self.session.query(AdminSistema).all()
-        admin_estacio = self.session.query(AdminEstacio).all()
-        estacios = self.session.query(Estacionamento).all()
-        veiculos = self.session.query(Veiculo).all()
-
-        self.assertEqual([self.adm_sis], admin_sis)
-        self.assertIn(self.adm_estacio, admin_estacio)
-        self.assertEqual(self.estacios, estacios)
-        self.assertEqual(self.veiculos, veiculos)
-
+class TestEstacionamentoCrudRepoCreate(BaseTestEstacioCrudRepo):
     def _general_test_create_ok(self, adm_sess, estacio='def', horario_padrao='def', total_vaga='def', descricao='def',
                                 valores_hora='def', estacio_id='def'):
         estacio = self.estacios[0] if estacio == 'def' else estacio

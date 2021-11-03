@@ -2,10 +2,10 @@ from typing import Optional, Iterable, Tuple, Union
 
 from sqlalchemy.orm import Session
 
-from src.classes import UserSession, ValorHoraInput
+from src.classes import UserSession, ValorHoraInput, FileStream
 from src.enums import UserType
 from src.exceptions import ValidationError
-from src.models import HorarioPadrao, Estacionamento
+from src.models import HorarioPadrao, Estacionamento, Endereco
 
 
 class EstacionamentoCrudRepo:
@@ -66,5 +66,23 @@ class EstacionamentoCrudRepo:
         estacio.cadastro_terminado = True
 
         sess.commit()
+
+        return True, estacio
+
+    def edit(        
+        self, user_sess: UserSession, sess: Session,
+        nome: Optional[str] = None,
+        telefone: Optional[str] = None,
+        endereco: Optional[Endereco] = None,
+        total_vaga: Optional[int] = None,
+        descricao: Optional[str] = None,
+        foto: Optional[FileStream] = None,
+        estacio_id: Optional[str] = None,
+    ) -> Tuple[bool, Union[str, Estacionamento]]:
+        adm = user_sess.user
+        if user_sess.tipo != UserType.ESTACIONAMENTO:
+            estacio = sess.query(Estacionamento).get(estacio_id)
+        else:
+            estacio = adm.estacionamento
 
         return True, estacio
