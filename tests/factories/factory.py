@@ -89,6 +89,10 @@ def _call_faker_prov(provider, **kwargs):
     return factory.Faker(provider).evaluate(None, None, extra)
 
 
+def str_uuid4():
+    return str(uuid4())
+
+
 class ValorHoraInputFactory(factory.Factory):
     veiculo_id = factory.Sequence(lambda x: str(x + 1))
     valor = factory.LazyFunction(_random_decimal(10, 30))
@@ -121,7 +125,7 @@ class AdminEstacioFactory(factory.alchemy.SQLAlchemyModelFactory):
 
 class UploadFactory(factory.alchemy.SQLAlchemyModelFactory):
     id = factory.Sequence(lambda x: x + 1)
-    nome_arquivo = factory.LazyFunction(uuid4)
+    nome_arquivo = factory.LazyFunction(str_uuid4)
     sub_dir = factory.fuzzy.FuzzyText(length=10)
     status = factory.LazyFunction(_from_enum(UploadStatus))
 
