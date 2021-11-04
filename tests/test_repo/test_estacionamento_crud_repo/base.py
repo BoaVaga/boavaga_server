@@ -67,7 +67,10 @@ class BaseTestEstacioCrudRepo(unittest.TestCase):
         self.file_data = b'abc'
         self.fstream = MemoryFileStream(self.file_data)
 
-        self.repo = EstacionamentoCrudRepo()
+        cfg = self.container.config.get('pedido_cadastro')
+        width, height = int(cfg['width_foto']), int(cfg['height_foto'])
+
+        self.repo = EstacionamentoCrudRepo(width, height, uploader=self.uploader, image_proc=self.image_processor)
 
     def tearDown(self) -> None:
         general_db_teardown(self.conn, self.outer_trans, self.session)
