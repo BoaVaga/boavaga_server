@@ -1,5 +1,5 @@
 [db]
-conn_string = mysql://user:password@localhost/dbname
+conn_string = mysql+mysqlconnector://user:password@localhost/dbname
 
 [crypto]
 is_testing = 0

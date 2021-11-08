@@ -17,13 +17,17 @@ class RepoContainer(containers.DeclarativeContainer):
     auth_repo = providers.Factory(AuthRepo)
     admin_sistema_repo = providers.Factory(AdminSistemaRepo)
     pedido_cadastro_crud_repo = providers.Factory(
-        PedidoCadastroCrudRepo,
+        PedidoCadastroCrudRepo, 
         width_foto=config.pedido_cadastro.width_foto.as_int(),
         height_foto=config.pedido_cadastro.height_foto.as_int(),
         limite_tentativas=config.pedido_cadastro.limite_tentativas.as_int()
     )
     pedido_cadastro_aprovacao_repo = providers.Factory(PedidoCadastroAprovacaoRepo)
-    estacionamento_crud_repo = providers.Factory(EstacionamentoCrudRepo)
+    estacionamento_crud_repo = providers.Factory(
+        EstacionamentoCrudRepo,
+        width_foto=config.pedido_cadastro.width_foto.as_int(),
+        height_foto=config.pedido_cadastro.height_foto.as_int(),
+    )
     estacionamento_others_repo = providers.Factory(EstacionamentoOthersRepo)
     buscar_estacio_repo = providers.Factory(
         BuscarEstacioRepo,
