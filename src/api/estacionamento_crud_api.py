@@ -7,9 +7,9 @@ from dependency_injector.wiring import Provide
 from sqlalchemy.orm import Session
 
 from src.api.base import BaseApi
-from src.classes import ValorHoraInput
+from src.classes import ValorHoraInput, FileStream, FlaskFileStream
 from src.container import Container
-from src.models import HorarioPadrao
+from src.models import HorarioPadrao, Endereco
 from src.repo import EstacionamentoCrudRepo, RepoContainer
 from src.services import Cached
 
@@ -23,7 +23,10 @@ class EstacionamentoCrudApi(BaseApi):
         self.repo = estacio_crud_repo
 
         queries = {}
-        mutations = {'finishEstacionamentoCadastro': self.finish_estacionamento_cadastro_resolver}
+        mutations = {
+            'finishEstacionamentoCadastro': self.finish_estacionamento_cadastro_resolver,
+            'editEstacionamento': self.edit_estacionamento_resolver
+        }
 
         super().__init__(queries, mutations)
 
@@ -59,3 +62,42 @@ class EstacionamentoCrudApi(BaseApi):
                 'success': False,
                 'error': error_or_estacio
             }
+
+    def edit_estacionamento_resolver(
+        self, _, info, 
+        nome: Optional[str] = None,
+        telefone: Optional[str] = None,
+        endereco: Optional[Endereco] = None,
+        total_vaga: Optional[int] = None,
+        descricao: Optional[str] = None,
+        foto: Optional[FileStream] = None,
+        estacio_id: Optional[str] = None
+    ):
+        sess: Session = flask.g.session
+        user_sess = self.get_user_session(sess, self.cached, info)
+
+        end = fstream = None
+
+        if endereco:
+            endereco = {k: v.strip() if isinstance(v, str) else v for k, v in endereco.items()}
+
+            end = Endereco.from_dict(endereco)
+            val_res = end.validate()
+
+            if val_res is not None:
+                return {'success': False, 'error': val_res}
+
+        try:
+            if foto:
+                fstream = FlaskFileStream(foto)
+
+            success, error_or_estacio = self.repo.edit(user_sess, sess, nome=nome, telefone=telefone, endereco=end, total_vaga=total_vaga,
+                                                       descricao=descricao, foto=fstream, estacio_id=estacio_id)
+        except Exception as ex:
+            logging.getLogger(__name__).error('Error on edit_estacionamento_resolver', exc_info=ex)
+            success, error_or_estacio = False, self.ERRO_DESCONHECIDO
+
+        if success:
+            return {'success': True, 'estacionamento': error_or_estacio}
+        else:
+            return {'success': False, 'error': error_or_estacio}

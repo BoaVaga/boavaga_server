@@ -181,8 +181,10 @@ type Mutation {
     acceptPedidoCadastro(pedidoId: ID!, coordenadas: Point!): EstacioCadRes!
     rejectPedidoCadastro(pedidoId: ID!, motivo: String!): SimpleResponse!
     finishEstacionamentoCadastro(totalVaga: Int!, horarioPadrao: HorarioPadraoInput!, valoresHora: [ValorHoraInput],
-        estacioId: ID, descricao: String): EstacioCadRes
+        estacioId: ID, descricao: String): EstacioCadRes!
     atualizarQtdVagaLivre(numVaga: Int!): SimpleResponse!
+    editEstacionamento(nome: String, telefone: String, endereco: EnderecoInput, total_vaga: Int, descricao: String,
+        foto: Upload, estacio_id: String): EstacioCadRes!
 }
 
 type Query {
