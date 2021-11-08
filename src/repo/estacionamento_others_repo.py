@@ -1,9 +1,12 @@
-from typing import Tuple, Optional
+from datetime import time
+from decimal import Decimal
+from typing import Tuple, Optional, Union
 
 from sqlalchemy.orm import Session
 
 from src.classes import UserSession
 from src.enums import UserType
+from src.models import HorarioPadrao, ValorHora
 
 
 class EstacionamentoOthersRepo:
@@ -33,3 +36,11 @@ class EstacionamentoOthersRepo:
 
         sess.commit()
         return True, None
+
+    def edit_horario_padrao(self, user_sess: UserSession, sess: Session, dia: str, hora_abre: time, hora_fecha: time,
+                            estacio_id: Optional[str] = None) -> Tuple[bool, Union[str, HorarioPadrao]]:
+        pass
+
+    def edit_valor_hora(self, user_sess: UserSession, sess: Session, veiculo_id: str, valor: Decimal,
+                        estacio_id: Optional[str] = None) -> Tuple[bool, Union[str, ValorHora]]:
+        pass
