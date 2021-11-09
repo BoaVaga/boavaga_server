@@ -7,6 +7,8 @@ from sqlalchemy.orm import Session
 from src.classes import UserSession
 from src.enums import UserType
 from src.models import HorarioPadrao, ValorHora
+from src.models.estacionamento import Estacionamento
+from src.models.veiculo import Veiculo
 
 
 class EstacionamentoOthersRepo:
@@ -43,4 +45,12 @@ class EstacionamentoOthersRepo:
 
     def edit_valor_hora(self, user_sess: UserSession, sess: Session, veiculo_id: str, valor: Decimal,
                         estacio_id: Optional[str] = None) -> Tuple[bool, Union[str, ValorHora]]:
-        pass
+        adm = user_sess.user
+        estacio_id = estacio_id or adm.estacio_fk
+
+        veiculo = sess.query(Veiculo).get(veiculo_id)
+        valor_hora = ValorHora(veiculo=veiculo, valor=valor, estacio_fk=estacio_id)
+
+        sess.commit()
+
+        return True, valor_hora
