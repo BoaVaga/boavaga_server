@@ -45,12 +45,22 @@ class EstacionamentoOthersRepo:
 
     def edit_valor_hora(self, user_sess: UserSession, sess: Session, veiculo_id: str, valor: Decimal,
                         estacio_id: Optional[str] = None) -> Tuple[bool, Union[str, ValorHora]]:
-        adm = user_sess.user
-        estacio_id = estacio_id or adm.estacio_fk
+        if user_sess.tipo is None:
+            return False, self.ERRO_SEM_PERMISSAO
+        elif user_sess.tipo == UserType.ESTACIONAMENTO:
+            estacio_id = user_sess.user.estacio_fk
 
-        veiculo = sess.query(Veiculo).get(veiculo_id)
-        valor_hora = ValorHora(veiculo=veiculo, valor=valor, estacio_fk=estacio_id)
+        # veiculo = sess.query(Veiculo).get(veiculo_id)
+        valor_hora = sess.query(ValorHora).filter(ValorHora.estacio_fk == estacio_id and ValorHora.veiculo_fk == veiculo_id).first()
+        if valor_hora is None:
+            valor_hora = ValorHora(veiculo=veiculo_id, valor=valor, estacio_fk=estacio_id)
+        else:
+            valor_hora.valor = valor
 
         sess.commit()
 
         return True, valor_hora
+
+    def delete_valor_hora(self, user_sess: UserSession, sess: Session, veiculo_id: str,
+                          estacio_id: Optional[str] = None) -> Tuple[bool, Optional[str]]:
+        return True, None

@@ -68,3 +68,50 @@ class TestEstacioEditValorHora(BaseTestEstacioOthers):
 
             self.assertEqual('valor_nao_positivo', error, 'Error should be "valor_nao_positivo"')
             self.assertEqual(False, success, 'Success should be False')
+
+    def _general_test_delete_valor_hora_ok(self, user_sess, estacio_id='def', veiculo='def'):
+        veiculo = self.veiculos[0] if veiculo == 'def' else veiculo
+        v_id = str(veiculo.id)
+
+        v_hora = ValorHoraFactory.build(veiculo=veiculo)
+        self.adm_estacio.estacionamento.valores_hora.append(v_hora)
+        ori_id = int(v_hora.id)
+
+        estacio_id = None if estacio_id == 'def' else estacio_id
+
+        success, error = self.repo.delete_valor_hora(user_sess, self.session, v_id, estacio_id=estacio_id)
+
+        self.assertEqual(True, success, f'Success should be True. Error: {error}')
+        self.assertIsNone(error, 'Error should be None')
+
+        instance = self.session.query(ValorHora).get(ori_id)
+
+        self.assertIsNone(instance, 'Should delete the valor hora from the db')
+
+    def test_delete_valor_hora_ok(self):
+        self._general_test_delete_valor_hora_ok(self.adm_estacio_sess)
+
+    def test_delete_valor_hora_adm_sis_ok(self):
+        self._general_test_delete_valor_hora_ok(self.adm_sis_sess, estacio_id=str(self.estacios[0].id))
+
+    def test_delete_valor_hora_sem_permissao(self):
+        success, error = self.repo.delete_valor_hora(None, self.session, str(self.veiculos[0].id))
+
+        self.assertEqual(False, success, 'Success should be False')
+        self.assertEqual('sem_permissao', error, 'Error should be "sem_permissao"')
+
+    def test_delete_valor_hora_vhora_nao_encontrado(self):
+        success, error = self.repo.delete_valor_hora(self.adm_estacio_sess, self.session, str(self.veiculos[0].id))
+
+        self.assertEqual(False, success, 'Success should be False')
+        self.assertEqual('valor_hora_nao_encontrado', error, 'Error should be "valor_hora_nao_encontrado"')
+
+    def test_delete_valor_hora_veiculo_inexistente(self):
+        veiculo = self.veiculos[0]
+        v_hora = ValorHoraFactory.build(veiculo=veiculo)
+        self.adm_estacio.estacionamento.valores_hora.append(v_hora)
+
+        success, error = self.repo.delete_valor_hora(self.adm_estacio_sess, self.session, '-1')
+
+        self.assertEqual(False, success, 'Success should be False')
+        self.assertEqual('valor_hora_nao_encontrado', error, 'Error should be "valor_hora_nao_encontrado"')
