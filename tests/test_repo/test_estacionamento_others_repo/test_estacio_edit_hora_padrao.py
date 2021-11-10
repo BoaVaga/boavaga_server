@@ -1,9 +1,7 @@
 import datetime
-from decimal import Decimal
 import unittest
 from src.models.estacionamento import Estacionamento
-from src.models import ValorHora, HorarioPadrao
-from tests.factories.factory import ValorHoraFactory
+from src.models import HorarioPadrao
 from tests.test_repo.test_estacionamento_others_repo.base import BaseTestEstacioOthers
 
 _DIAS = ('segunda', 'terca', 'quarta', 'quinta', 'sexta', 'sabado', 'domingo')

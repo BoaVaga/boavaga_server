@@ -1,15 +1,21 @@
-#directive @inherits(type: String!) on OBJECT
-
 schema {
     query: Query
     mutation: Mutation
 }
+
+# ---------------
+# --- Scalar ----
+# ---------------
 
 scalar Upload
 scalar Point
 scalar Time
 scalar Date
 scalar Decimal
+
+# --------------
+# --- Enums ----
+# --------------
 
 enum UserType {
     SISTEMA,
@@ -19,6 +25,10 @@ enum UserType {
 enum EstadosEnum {
     AC, AL, AP, AM, BA, CE, DF, ES, GO, MA, MT, MS, MG, PA, PB, PR, PE, PI, RJ, RN, RS, RO, RR, SC, SP, SE, TO
 }
+
+# ---------------
+# --- Models ----
+# ---------------
 
 type AdminSistema {
     id: ID!,
@@ -60,32 +70,10 @@ type HorarioPadrao {
     domingoFec: Time
 }
 
-input HorarioPadraoInput {
-    segundaAbr: Time,
-    segundaFec: Time,
-    tercaAbr: Time,
-    tercaFec: Time,
-    quartaAbr: Time,
-    quartaFec: Time,
-    quintaAbr: Time,
-    quintaFec: Time,
-    sextaAbr: Time,
-    sextaFec: Time,
-    sabadoAbr: Time,
-    sabadoFec: Time,
-    domingoAbr: Time,
-    domingoFec: Time
-}
-
 type ValorHora {
     id: ID!,
     valor: Decimal!,
     veiculo: String!
-}
-
-input ValorHoraInput {
-    valor: Decimal!
-    veiculoId: ID!
 }
 
 type HorarioDivergente {
@@ -123,6 +111,32 @@ type Endereco {
     coordenadas: Point
 }
 
+# ---------------
+# --- Inputs ----
+# ---------------
+
+input HorarioPadraoInput {
+    segundaAbr: Time,
+    segundaFec: Time,
+    tercaAbr: Time,
+    tercaFec: Time,
+    quartaAbr: Time,
+    quartaFec: Time,
+    quintaAbr: Time,
+    quintaFec: Time,
+    sextaAbr: Time,
+    sextaFec: Time,
+    sabadoAbr: Time,
+    sabadoFec: Time,
+    domingoAbr: Time,
+    domingoFec: Time
+}
+
+input ValorHoraInput {
+    valor: Decimal!
+    veiculoId: ID!
+}
+
 input EnderecoInput {
     logradouro: String!,
     estado: EstadosEnum!,
@@ -131,6 +145,10 @@ input EnderecoInput {
     numero: String!,
     cep: String!
 }
+
+# -------------------------
+# --- Tipos de Retorno ----
+# -------------------------
 
 type BaseAdminSistemaRes {
     success: Boolean!,
@@ -173,6 +191,10 @@ type SimpleResponse {
     error: String
 }
 
+# -----------------
+# --- Mutation ----
+# -----------------
+
 type Mutation {
     createAdminSistema(nome: String!, email: String!, senha: String!): BaseAdminSistemaRes!
     login(email: String!, senha: String!, tipo: UserType!): LoginRes!
@@ -186,6 +208,10 @@ type Mutation {
     editEstacionamento(nome: String, telefone: String, endereco: EnderecoInput, total_vaga: Int, descricao: String,
         foto: Upload, estacio_id: String): EstacioCadRes!
 }
+
+# --------------
+# --- Query ----
+# --------------
 
 type Query {
     getPedidoCadastro(pedidoId: ID): PedidoCadastroRes!
