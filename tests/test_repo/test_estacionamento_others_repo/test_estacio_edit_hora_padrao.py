@@ -10,7 +10,7 @@ _DIAS = ('segunda', 'terca', 'quarta', 'quinta', 'sexta', 'sabado', 'domingo')
 class TestEstacioEditHoraPadrao(BaseTestEstacioOthers):
     def _test_general_edit_ok(self, user_sess, dia, h_abre='def', h_fec='def', estacio='def', estacio_id='def'):
         estacio_id = None if estacio_id == 'def' else estacio_id
-        estacio = user_sess.user.estacionamento if estacio_id is None else self.session.query(Estacionamento).get(estacio_id)
+        estacio = user_sess.user.estacionamento if estacio == 'def' else self.session.query(Estacionamento).get(estacio_id)
         
         h_abre = datetime.time(10, 0, 0) if h_abre == 'def' else h_abre
         h_fec = datetime.time(20, 0, 0) if h_fec == 'def' else h_fec
@@ -36,7 +36,7 @@ class TestEstacioEditHoraPadrao(BaseTestEstacioOthers):
         self._test_general_edit_ok(self.adm_estacio_sess, 'segunda')
 
     def test_edit_horap_ok_adm_sis(self):
-        self._test_general_edit_ok(self.adm_sis_sess, 'quarta', estacio_id=str(self.estacios[1].id))
+        self._test_general_edit_ok(self.adm_sis_sess, 'quarta', estacio=self.estacios[1], estacio_id=str(self.estacios[1].id))
 
     def test_edit_horap_all_days_ok(self):
         _MODOS = (
@@ -80,6 +80,56 @@ class TestEstacioEditHoraPadrao(BaseTestEstacioOthers):
             self.assertEqual('hora_padrao_fecha_antes_de_abrir', error, 
                              f'Error should be "hora_padrao_fecha_antes_de_abrir" on {i}')
             self.assertEqual(False, success, f'Success should be False on {i}')
+
+    def test_edit_ignore_estacio_id_with_adm_estacio(self):
+        self._test_general_edit_ok(self.adm_estacio_sess, 'terca', estacio_id=str(self.estacios[1].id))
+
+    def _test_general_delete_ok(self, user_sess, dia, estacio='def', estacio_id='def'):
+        estacio = self.estacios[0] if estacio == 'def' else estacio
+        estacio_id = None if estacio_id == 'def' else estacio_id
+
+        ori_id = int(estacio.horap_fk)
+        ori_hora_p = HorarioPadrao.from_dict(estacio.horario_padrao.to_dict())
+
+        estacio_id = None if estacio_id == 'def' else estacio_id
+
+        success, error = self.repo.delete_horario_padrao(user_sess, self.session, dia, estacio_id=estacio_id)
+
+        self.assertEqual(True, success, f'Success should be True. Error: {error}')
+        self.assertIsNone(error, 'Error should be None')
+
+        hora_p = estacio.horario_padrao
+        for d in _DIAS:
+            _abr, _fec = getattr(hora_p, f'{d}_abr'), getattr(hora_p, f'{d}_fec')
+
+            if d == dia.strip().lower():
+                self.assertIsNone(_abr, f'Hora abre should change be deleted ({d})')
+                self.assertIsNone( _fec, f'Hora fecha should change be deleted ({d})')
+            else:
+                self.assertEqual(getattr(ori_hora_p, f'{d}_abr'), _abr, f'Hora abre should keep ({d})')
+                self.assertEqual(getattr(ori_hora_p, f'{d}_fec'), _fec, f'Hora fecha should keep ({d})')
+
+        instance = self.session.query(HorarioPadrao).get(ori_id)
+
+        self.assertIsNotNone(instance, 'Should not delete the row from the db')
+        self.assertEqual(hora_p, instance, 'Instances should match on db level')
+
+    def test_edit_delete_ok(self):
+        self._test_general_edit_ok(self.adm_estacio_sess, 'segunda', None, None)
+    
+    def test_edit_delete_only_one_error(self):
+        _TESTS = (
+            (None, datetime.time(10)),
+            (datetime.time(10), None)
+        )
+
+        for i in range(len(_TESTS)):
+            abr, fec = _TESTS[i]
+
+            success, error = self.repo.edit_horario_padrao(self.adm_estacio_sess, self.session, 'terca', abr, fec)
+
+            self.assertEqual('hora_padrao_dia_incompleto', error, 'Error should be "hora_padrao_dia_incompleto"')
+            self.assertEqual(False, success, 'Success should be False')
 
 
 if __name__ == '__main__':

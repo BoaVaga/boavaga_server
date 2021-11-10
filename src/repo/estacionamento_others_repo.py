@@ -26,6 +26,7 @@ class EstacionamentoOthersRepo:
     ERRO_VALOR_HORA_NAO_ENCONTRADO = 'valor_hora_nao_encontrado'
     ERRO_DIA_INVALIDO = 'dia_invalido'
     ERRO_FECHA_ANTES_DE_ABRIR = 'hora_padrao_fecha_antes_de_abrir'
+    ERRO_HORA_PADRAO_DIA_INCOMPLETO = 'hora_padrao_dia_incompleto'
 
     def atualizar_vagas_livres(self, user_sess: UserSession, sess: Session, num_vagas: int) \
             -> Tuple[bool, Optional[str]]:
@@ -49,12 +50,15 @@ class EstacionamentoOthersRepo:
         sess.commit()
         return True, None
 
-    def edit_horario_padrao(self, user_sess: UserSession, sess: Session, dia: str, hora_abre: time, hora_fecha: time,
-                            estacio_id: Optional[str] = None) -> Tuple[bool, Union[str, HorarioPadrao]]:
+    def edit_horario_padrao(self, user_sess: UserSession, sess: Session, dia: str, hora_abre: Optional[time],
+                            hora_fecha: Optional[time], estacio_id: Optional[str] = None) -> Tuple[bool, Union[str, HorarioPadrao]]:
         if user_sess is None:
             return False, self.ERRO_SEM_PERMISSAO
 
-        if hora_fecha <= hora_abre:
+        if hora_abre is None or hora_fecha is None:
+            if hora_abre is not None or hora_fecha is not None:
+                return False, self.ERRO_HORA_PADRAO_DIA_INCOMPLETO
+        elif hora_fecha <= hora_abre:
             return False, self.ERRO_FECHA_ANTES_DE_ABRIR
 
         if user_sess.tipo == UserType.ESTACIONAMENTO:
