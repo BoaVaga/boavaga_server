@@ -1,16 +1,17 @@
 from decimal import Decimal
+from src.models import estacionamento
 from src.models.estacionamento import Estacionamento
 from src.models.valor_hora import ValorHora
 from tests.factories.factory import ValorHoraFactory
 from tests.test_repo.test_estacionamento_others_repo.base import BaseTestEstacioOthers
 
 class TestEstacioEditValorHora(BaseTestEstacioOthers):
-    def _test_general_edit_ok(self, user_sess, veiculo='def', estacio_id='def', expec_estacio_id='def'):
+    def _test_general_edit_ok(self, user_sess, veiculo='def', estacio_id='def', expect_estacio_id='def'):
         veiculo = self.veiculos[0] if veiculo == 'def' else veiculo
         v_id = str(veiculo.id)
         valor = Decimal('15.20')
 
-        expect_estacio_id = self.adm_estacio.estacio_fk if expec_estacio_id == 'def' else expec_estacio_id
+        expect_estacio_id = self.adm_estacio.estacio_fk if expect_estacio_id == 'def' else expect_estacio_id
         estacio_id = None if estacio_id == 'def' else estacio_id
 
         success, valor_hora = self.repo.edit_valor_hora(user_sess, self.session, v_id, valor, estacio_id=estacio_id)
@@ -23,7 +24,8 @@ class TestEstacioEditValorHora(BaseTestEstacioOthers):
         self._test_general_edit_ok(self.adm_estacio_sess)
 
     def test_edit_valor_hora_ok_adm_sis(self):
-        self._test_general_edit_ok(self.adm_sis_sess, estacio_id=str(self.estacios[1].id))
+        e_id = str(self.estacios[1].id)
+        self._test_general_edit_ok(self.adm_sis_sess, estacio_id=e_id, expect_estacio_id=e_id)
 
     def test_edit_valor_hora_sem_permissao(self):
         success, error = self.repo.edit_valor_hora(None, self.session, str(self.veiculos[0].id), Decimal(1))
@@ -40,10 +42,10 @@ class TestEstacioEditValorHora(BaseTestEstacioOthers):
             self.assertEqual(False, success, 'Success should be False')
 
     def test_edit_valor_hora_ignorar_estacio_id_com_adm_estacio(self):
-        expec_e_id = self.adm_estacio.estacio_fk
+        expec_e_id = self.estacios[0].id
         e_id = str(self.estacios[1].id)
 
-        self._test_general_edit_ok(self.adm_estacio_sess, estacio_id=e_id, expec_estacio_id=expec_e_id)
+        self._test_general_edit_ok(self.adm_estacio_sess, estacio_id=e_id, expect_estacio_id=expec_e_id)
 
     def test_edit_valor_hora_veiculo_not_found(self):
         for vid in [None, '-1', 'asd4165454']:
@@ -54,9 +56,10 @@ class TestEstacioEditValorHora(BaseTestEstacioOthers):
 
     def test_edit_valor_hora_check_not_adding(self):
         estacio: Estacionamento = self.estacios[0]
-        estacio.valores_hora.append(ValorHoraFactory.build(veiculo=self.veiculos[1]))
+        valor_hora = ValorHoraFactory.build(veiculo=self.veiculos[1], estacionamento=estacio)
+        estacio.valores_hora.append(valor_hora)
 
-        self._test_general_edit_ok(self.adm_estacio_sess, veiculo=str(self.veiculos[1].id))
+        self._test_general_edit_ok(self.adm_estacio_sess, veiculo=self.veiculos[1])
 
         valores = self.session.query(ValorHora).filter(ValorHora.estacio_fk == estacio.id).all()
         self.assertEqual(1, len(valores), 'Should only edit - not add - the valor hora')
@@ -73,8 +76,10 @@ class TestEstacioEditValorHora(BaseTestEstacioOthers):
         veiculo = self.veiculos[0] if veiculo == 'def' else veiculo
         v_id = str(veiculo.id)
 
-        v_hora = ValorHoraFactory.build(veiculo=veiculo)
-        self.adm_estacio.estacionamento.valores_hora.append(v_hora)
+        estacio = self.estacios[0]
+
+        v_hora = ValorHoraFactory.build(veiculo=veiculo, estacionamento=estacio)
+        estacio.valores_hora.append(v_hora)
         ori_id = int(v_hora.id)
 
         estacio_id = None if estacio_id == 'def' else estacio_id
@@ -108,8 +113,10 @@ class TestEstacioEditValorHora(BaseTestEstacioOthers):
 
     def test_delete_valor_hora_veiculo_inexistente(self):
         veiculo = self.veiculos[0]
-        v_hora = ValorHoraFactory.build(veiculo=veiculo)
-        self.adm_estacio.estacionamento.valores_hora.append(v_hora)
+        estacio = self.estacios[0]
+
+        v_hora = ValorHoraFactory.build(veiculo=veiculo, estacionamento=estacio)
+        estacio.valores_hora.append(v_hora)
 
         success, error = self.repo.delete_valor_hora(self.adm_estacio_sess, self.session, '-1')
 

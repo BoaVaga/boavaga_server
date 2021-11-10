@@ -9,7 +9,7 @@ from tests.test_repo.test_estacionamento_others_repo.base import BaseTestEstacio
 _DIAS = ('segunda', 'terca', 'quarta', 'quinta', 'sexta', 'sabado', 'domingo')
 
 
-class TestEstacioEditValorHora(BaseTestEstacioOthers):
+class TestEstacioEditHoraPadrao(BaseTestEstacioOthers):
     def _test_general_edit_ok(self, user_sess, dia, h_abre='def', h_fec='def', estacio='def', estacio_id='def'):
         estacio_id = None if estacio_id == 'def' else estacio_id
         estacio = user_sess.user.estacionamento if estacio_id is None else self.session.query(Estacionamento).get(estacio_id)
@@ -25,7 +25,7 @@ class TestEstacioEditValorHora(BaseTestEstacioOthers):
         for d in _DIAS:
             _abr, _fec = getattr(hora_p, f'{d}_abr'), getattr(hora_p, f'{d}_fec')
 
-            if d == dia:
+            if d == dia.strip().lower():
                 self.assertEqual(h_abre, _abr, f'Hora abre should change ({d})')
                 self.assertEqual(h_fec, _fec, f'Hora fecha should change ({d})')
             else:
@@ -34,11 +34,54 @@ class TestEstacioEditValorHora(BaseTestEstacioOthers):
 
         self.assertEqual(hora_p.id, estacio.horap_fk, f'Hora padrao fk should match')
 
-    def test_edit_valor_hora_ok(self):
+    def test_edit_horap_ok(self):
         self._test_general_edit_ok(self.adm_estacio_sess, 'segunda')
 
-    def test_edit_valor_hora_ok_adm_sis(self):
+    def test_edit_horap_ok_adm_sis(self):
         self._test_general_edit_ok(self.adm_sis_sess, 'quarta', estacio_id=str(self.estacios[1].id))
+
+    def test_edit_horap_all_days_ok(self):
+        _MODOS = (
+            lambda s: '   ' + s + '   ',
+            lambda s: s.upper(),
+            lambda s: s.capitalize(),
+            lambda s: ''.join([s[i].upper() if i % 2 == 0 else s[i] for i in range(len(s))]),
+            lambda s: s
+        )
+
+        for dia in _DIAS:
+            for modo in _MODOS:
+                fdia = modo(dia)
+                self._test_general_edit_ok(self.adm_estacio_sess, fdia)
+
+    def test_edit_horap_sem_permissao(self):
+        success, error = self.repo.edit_horario_padrao(None, self.session, 'segunda', datetime.time(1), datetime.time(2))
+
+        self.assertEqual('sem_permissao', error, 'Error should be "sem_permissao"')
+        self.assertEqual(False, success, 'Success should be False')
+
+    def test_edit_horap_dia_invalido(self):
+        for d in ['segundaA', 'asddAaAAA', '11232', '0terca', 'terça', 'sábado']:
+            success, error = self.repo.edit_horario_padrao(self.adm_estacio_sess, self.session, d, datetime.time(1),
+                                                           datetime.time(2))
+
+            self.assertEqual('dia_invalido', error, f'Error should be "dia_invalido" on "{d}"')
+            self.assertEqual(False, success, f'Success should be False on "{d}"')
+
+    def test_edit_horap_fecha_antes_de_abrir(self):
+        _TESTS = (
+            (datetime.time(10, 30, 0), datetime.time(10, 29, 0)),
+            (datetime.time(10, 30, 0), datetime.time(10, 30, 0)),
+            (datetime.time(10, 30, 0), datetime.time(9, 31, 0))
+        )
+
+        for i in range(len(_TESTS)):
+            abr, fec = _TESTS[i]
+            success, error = self.repo.edit_horario_padrao(self.adm_estacio_sess, self.session, 'terca', abr, fec)
+            
+            self.assertEqual('hora_padrao_fecha_antes_de_abrir', error, 
+                             f'Error should be "hora_padrao_fecha_antes_de_abrir" on {i}')
+            self.assertEqual(False, success, f'Success should be False on {i}')
 
 
 if __name__ == '__main__':
