@@ -48,7 +48,7 @@ class BaseTestEstacioCrudRepo(unittest.TestCase):
 
         self.adm_estacio_edit, self.adm_estacio_edit_sess = get_adm_estacio(self.crypto, self.session, n=9854)
         self.adm_estacio_edit.estacionamento = self.estacios[1]
-        self.adm_estacio.admin_mestre = False
+        self.adm_estacio_edit.admin_mestre = False
         self.estacios[1].cadastro_terminado = True
 
         self.base_upload = UploadFactory(sub_dir='foto_estacio', status=UploadStatus.CONCLUIDO)

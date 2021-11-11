@@ -178,6 +178,33 @@ class EstacionamentoCrudRepo:
 
         return True, estacio
 
+    def list(self, sess: Session, amount: int = 0, index: int = 0) -> Tuple[bool, Union[str, Iterable[Estacionamento]]]:
+        if index < 0:
+            return True, tuple()
+
+        query = sess.query(Estacionamento).offset(index)
+
+        if amount > 0:
+            query = query.limit(amount)
+
+        estacios = query.all()
+
+        return True, estacios
+
+    def get(self, user_sess: UserSession, sess: Session, estacio_id: Optional[str] = None) -> Tuple[bool, Union[str, Estacionamento]]:
+        if estacio_id is None:
+            if user_sess is not None and user_sess.tipo == UserType.ESTACIONAMENTO:
+                estacio = user_sess.user.estacionamento
+            else:
+                estacio = None
+        else:
+            estacio = sess.query(Estacionamento).get(estacio_id)
+        
+        if estacio is None:
+            return False, self.ERRO_ESTACIO_NAO_ENCONTRADO
+
+        return True, estacio
+
     def _validate_total_vaga(self, total_vaga: int) -> Optional[str]:
         if total_vaga is not None and total_vaga <= 0:
             return self.ERRO_TOTAL_VAGA_INV

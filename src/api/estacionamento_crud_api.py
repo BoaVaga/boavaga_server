@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 from src.api.base import BaseApi
 from src.classes import ValorHoraInput, FileStream, FlaskFileStream
 from src.container import Container
-from src.models import HorarioPadrao, Endereco
+from src.models import HorarioPadrao, Endereco, estacionamento
 from src.repo import EstacionamentoCrudRepo, RepoContainer
 from src.services import Cached
 
@@ -22,7 +22,10 @@ class EstacionamentoCrudApi(BaseApi):
         self.cached = cached
         self.repo = estacio_crud_repo
 
-        queries = {}
+        queries = {
+            'listEstacionamento': self.list_estacio_resolver,
+            'getEstacionamento': self.get_estacio_resolver
+        }
         mutations = {
             'finishEstacionamentoCadastro': self.finish_estacionamento_cadastro_resolver,
             'editEstacionamento': self.edit_estacionamento_resolver
@@ -101,3 +104,46 @@ class EstacionamentoCrudApi(BaseApi):
             return {'success': True, 'estacionamento': error_or_estacio}
         else:
             return {'success': False, 'error': error_or_estacio}
+
+    @convert_kwargs_to_snake_case
+    def list_estacio_resolver(self, _, info, amount: int = 0, index: int = 0):
+        sess = flask.g.session
+
+        try:
+            success, estacios_or_error = self.repo.list(sess, amount, index)
+        except Exception as ex:
+            logging.getLogger(__name__).error('Error on list_estacio_resolver', exc_info=ex)
+            success, estacios_or_error = False, self.ERRO_DESCONHECIDO
+
+        if success:
+            return {
+                'success': True,
+                'estacionamentos': estacios_or_error
+            }
+        else:
+            return {
+                'success': False,
+                'error': estacios_or_error
+            }
+
+    @convert_kwargs_to_snake_case
+    def get_estacio_resolver(self, _, info, estacio_id: Optional[str] = None):
+        sess: Session = flask.g.session
+        user_sess = self.get_user_session(sess, self.cached, info)
+
+        try:
+            success, estacio_or_error = self.repo.get(user_sess, sess, estacio_id)
+        except Exception as ex:
+            logging.getLogger(__name__).error('Error on get_estacio_resolver', exc_info=ex)
+            success, estacio_or_error = False, self.ERRO_DESCONHECIDO
+
+        if success:
+            return {
+                'success': True,
+                'estacionamento': estacio_or_error
+            }
+        else:
+            return {
+                'success': False,
+                'error': estacio_or_error
+            }

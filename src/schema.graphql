@@ -245,5 +245,9 @@ type Query {
 
     listPedidoCadastro(amount: Int, index: Int): PedidoCadastroResList!
 
+    listEstacionamento(amount: Int, index: Int): EstacioListRes!
+
+    getEstacionamento(estacioId: Id): EstacioCadRes!
+
     buscarEstacio(coordenadas: Point!): EstacioListRes!
 }
