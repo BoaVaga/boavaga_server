@@ -20,12 +20,15 @@ class TestEstacioEditValorHora(BaseTestEstacioOthers):
         self.assertEqual(valor, valor_hora.valor, 'Valor should match')
         self.assertEqual(expect_estacio_id, valor_hora.estacio_fk, 'Estacio fk should match')
 
+        instance = self.session.query(ValorHora).get(valor_hora.id)
+        self.assertEqual(valor_hora, instance, 'Instances should match on db level')
+
     def test_edit_valor_hora_ok(self):
         self._test_general_edit_ok(self.adm_estacio_sess)
 
     def test_edit_valor_hora_ok_adm_sis(self):
-        e_id = str(self.estacios[1].id)
-        self._test_general_edit_ok(self.adm_sis_sess, estacio_id=e_id, expect_estacio_id=e_id)
+        e_id = self.estacios[1].id
+        self._test_general_edit_ok(self.adm_sis_sess, estacio_id=str(e_id), expect_estacio_id=e_id)
 
     def test_edit_valor_hora_sem_permissao(self):
         success, error = self.repo.edit_valor_hora(None, self.session, str(self.veiculos[0].id), Decimal(1))

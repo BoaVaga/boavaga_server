@@ -100,6 +100,7 @@ class EstacionamentoOthersRepo:
                 return False, self.ERRO_ESTACIO_NAO_ENCONTRADO
 
             valor_hora = ValorHora(veiculo=veiculo, valor=valor, estacio_fk=estacio_id)
+            sess.add(valor_hora)
         else:
             valor_hora.valor = valor
 

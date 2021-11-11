@@ -247,7 +247,7 @@ type Query {
 
     listEstacionamento(amount: Int, index: Int): EstacioListRes!
 
-    getEstacionamento(estacioId: Id): EstacioCadRes!
+    getEstacionamento(estacioId: ID): EstacioCadRes!
 
     buscarEstacio(coordenadas: Point!): EstacioListRes!
 }
