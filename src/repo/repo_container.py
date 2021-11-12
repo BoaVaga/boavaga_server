@@ -8,6 +8,7 @@ from src.repo.estacionamento_crud_repo import EstacionamentoCrudRepo
 from src.repo.pedido_cadastro_aprovacao_repo import PedidoCadastroAprovacaoRepo
 from src.repo.pedido_cadastro_repo import PedidoCadastroCrudRepo
 from src.repo.admin_sistema_repo import AdminSistemaRepo
+from src.repo.veiculo_crud_repo import VeiculoCrudRepo
 from src.repo.auth_repo import AuthRepo
 
 
@@ -33,6 +34,7 @@ class RepoContainer(containers.DeclarativeContainer):
         BuscarEstacioRepo,
         distancia=config.busca_estacio.distancia.as_int()
     )
+    veiculo_crud_repo = providers.Factory(VeiculoCrudRepo)
 
 
 def create_repo_container(config_filepath: str, extra_modules: Optional[List] = None):

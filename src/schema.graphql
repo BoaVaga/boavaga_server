@@ -111,6 +111,11 @@ type Endereco {
     coordenadas: Point
 }
 
+type Veiculo {
+    id: ID!,
+    nome: String!
+}
+
 # ---------------
 # --- Inputs ----
 # ---------------
@@ -203,6 +208,19 @@ type HorarioPadraoResponse {
     horarioPadrao: HorarioPadrao
 }
 
+type VeiculoCadRes {
+    success: Boolean!,
+    error: String,
+    veiculo: Veiculo
+}
+
+
+type VeiculoListRes {
+    success: Boolean!,
+    error: String,
+    veiculos: [Veiculo]
+}
+
 # -----------------
 # --- Mutation ----
 # -----------------
@@ -250,4 +268,7 @@ type Query {
     getEstacionamento(estacioId: ID): EstacioCadRes!
 
     buscarEstacio(coordenadas: Point!): EstacioListRes!
+
+    getVeiculo(veiculoId: ID!): VeiculoCadRes!
+    listVeiculo: VeiculoListRes!
 }

@@ -5,6 +5,7 @@ from src.api.estacionamento_crud_api import EstacionamentoCrudApi
 from src.api.estacionamento_others_api import EstacionamentoOthersApi
 from src.api.pedido_cadastro_api import PedidoCadastroApi
 from src.api.pedido_cadastro_aprovacao_api import PedidoCadastroAprovacaoApi
+from src.api.veiculo_crud_api import VeiculoCrudApi
 
 APIS = (
     AdminSistemaApi,
@@ -13,5 +14,6 @@ APIS = (
     PedidoCadastroAprovacaoApi,
     EstacionamentoCrudApi,
     EstacionamentoOthersApi,
-    BuscarEstacioApi
+    BuscarEstacioApi,
+    VeiculoCrudApi
 )
