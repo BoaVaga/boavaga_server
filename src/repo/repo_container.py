@@ -10,6 +10,7 @@ from src.repo.pedido_cadastro_repo import PedidoCadastroCrudRepo
 from src.repo.admin_sistema_repo import AdminSistemaRepo
 from src.repo.veiculo_crud_repo import VeiculoCrudRepo
 from src.repo.auth_repo import AuthRepo
+from src.repo.horario_divergente_repo import HorarioDivergenteRepo
 
 
 class RepoContainer(containers.DeclarativeContainer):
@@ -35,6 +36,7 @@ class RepoContainer(containers.DeclarativeContainer):
         distancia=config.busca_estacio.distancia.as_int()
     )
     veiculo_crud_repo = providers.Factory(VeiculoCrudRepo)
+    horario_divergente_repo = providers.Factory(HorarioDivergenteRepo)
 
 
 def create_repo_container(config_filepath: str, extra_modules: Optional[List] = None):

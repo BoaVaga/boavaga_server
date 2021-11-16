@@ -11,7 +11,7 @@ class HorarioDivergente(Base):
     __tablename__ = 'horario_divergente'
 
     id = Column(SmallInteger(), primary_key=True, autoincrement=True, nullable=False)
-    data = Column(Date(), nullable=False)
+    data = Column(Date(), nullable=False, unique=True)
     hora_abr = Column(Time(), nullable=False)
     hora_fec = Column(Time(), nullable=False)
     estacio_fk = Column(SmallInteger(), ForeignKey('estacionamento.id'), nullable=False)

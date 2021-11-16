@@ -7,3 +7,4 @@ from src.repo.pedido_cadastro_repo import PedidoCadastroCrudRepo
 from src.repo.estacionamento_others_repo import EstacionamentoOthersRepo
 from src.repo.veiculo_crud_repo import VeiculoCrudRepo
 from src.repo.repo_container import RepoContainer
+from src.repo.horario_divergente_repo import HorarioDivergenteRepo
