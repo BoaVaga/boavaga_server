@@ -3,7 +3,7 @@ import pathlib
 import unittest
 
 from src.container import create_container
-from src.models import AdminSistema, AdminEstacio, Estacionamento, admin_estacio, estacionamento
+from src.models import AdminSistema, AdminEstacio, Estacionamento
 from src.models.horario_divergente import HorarioDivergente
 from src.repo import HorarioDivergenteRepo
 from tests.factories import set_session, EstacionamentoFactory
@@ -32,8 +32,10 @@ class TestHorarioDivergenteRepo(unittest.TestCase):
         self.conn, self.outer_trans, self.session = make_general_db_setup(self.engine)
         set_session(self.session)  # Factories
 
+        self.data, self.habre, self.hfecha = datetime.date.today(), datetime.time(13, 0, 0), datetime.time(20, 30, 0)
+
         self.estacios = EstacionamentoFactory.create_batch(10, cadastro_terminado=True)
-        self.horarios = [HorarioDivergenteFactory.create(data=datetime.date(2021, 12, 30), estacionamento=self.estacios[1])]
+        self.horarios = [HorarioDivergenteFactory.create(data=self.data, estacionamento=self.estacios[1])]
 
         self.session.commit()
 
@@ -47,8 +49,6 @@ class TestHorarioDivergenteRepo(unittest.TestCase):
         self.adm_estacio_edit, self.adm_estacio_edit_sess = get_adm_estacio(self.crypto, self.session, n=6471)
         self.adm_estacio_edit.estacionamento = self.estacios[1]
         self.adm_estacio_edit.admin_mestre = False
-
-        self.data, self.habre, self.hfecha = datetime.date(2021, 11, 15), datetime.time(13, 0, 0), datetime.time(20, 30, 0)
 
         self.repo = HorarioDivergenteRepo()
 
@@ -85,8 +85,8 @@ class TestHorarioDivergenteRepo(unittest.TestCase):
         self.assertEqual(self.data, horad.data, 'Data should match')
         self.assertEqual(self.habre, horad.hora_abr, 'Hora abre should match')
         self.assertEqual(self.hfecha, horad.hora_fec, 'Hora fecha should match')
-        self.assertEqual(self.estacios[0], horad.estacionamento, 'Estacionamento should match')
-        self.assertEqual(self.estacios[0].id, horad.estacio_fk, 'Estacio fk should match')
+        self.assertEqual(self.estacios[1], horad.estacionamento, 'Estacionamento should match')
+        self.assertEqual(self.estacios[1].id, horad.estacio_fk, 'Estacio fk should match')
         self.assertEqual(ori_id, horad.id, 'Should not create a new instance')
 
     def test_set_no_permission(self):
@@ -107,10 +107,62 @@ class TestHorarioDivergenteRepo(unittest.TestCase):
         self.assertEqual(False, success, 'Success should be False')
 
     def test_set_fecha_antes_abre(self):
-        pass
+        _TESTS = (
+            (datetime.time(10, 30, 0), datetime.time(10, 29, 0)),
+            (datetime.time(10, 30, 0), datetime.time(10, 30, 0)),
+            (datetime.time(10, 30, 0), datetime.time(9, 31, 0))
+        )
+
+        for i in range(len(_TESTS)):
+            abr, fec = _TESTS[i]
+            success, error = self.repo.set(self.adm_estacio_sess, self.session, self.data, abr, fec)
+            
+            self.assertEqual('fecha_antes_de_abrir', error, 
+                             f'Error should be "fecha_antes_de_abrir" on {i}')
+            self.assertEqual(False, success, f'Success should be False on {i}')
 
     def test_set_data_passada(self):
-        pass
+        datas = [datetime.date(2021, 10, 30), datetime.date(2020, 12, 30), datetime.date(2021, 11, 15)]
+
+        for data in datas:
+            success, error = self.repo.set(self.adm_estacio_sess, self.session, data, self.habre, self.hfecha)
+
+            self.assertEqual('data_passada', error, f'Error should be "data_passada" on {data}')
+            self.assertEqual(False, success, f'Success should be False on {data}')
+
+    def test_delete_ok(self):
+        ori_id = int(self.horarios[0].id)
+        success, error = self.repo.delete(self.adm_estacio_edit_sess, self.session, self.data)
+
+        self.assertIsNone(error, 'Error should be None')
+        self.assertEqual(True, success, 'Success should be True')
+
+        instance = self.session.query(HorarioDivergente).get(ori_id)
+        self.assertIsNone(instance, 'Should delete the instance from the db')
+
+    def test_delete_sem_permissao(self):
+        _sess = [self.adm_sis_sess, None]
+
+        for i in range(len(_sess)):
+            success, ret = self.repo.delete(_sess[i], self.session, self.data)
+
+            self.assertEqual('sem_permissao', ret, f'Error should be "sem_permissao" on {i}')
+            self.assertEqual(False, success, f'Success should be False on {i}')
+
+    def test_delete_sem_estacio(self):
+        adm_estacio, admin_estacio_sess = get_adm_estacio(self.crypto, self.session, n=9717)
+
+        success, error = self.repo.delete(admin_estacio_sess, self.session, self.data)
+
+        self.assertEqual('sem_estacio', error, 'Error should be "sem_estacio"')
+        self.assertEqual(False, success, 'Success should be False')
+
+    def test_delete_data_nao_encontrada(self):
+        data = datetime.date(2021, 11, 10)
+
+        success, error = self.repo.delete(self.adm_estacio_edit_sess, self.session, data)
+        self.assertEqual('data_nao_encontrada', error, 'Error should be "data_nao_encontrada"')
+        self.assertEqual(False, success, 'Success should be False')
 
 
 if __name__ == '__main__':

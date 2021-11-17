@@ -49,7 +49,7 @@ def _get_scalars():
 
     @date_scalar.value_parser
     def parse_date(value):
-        return datetime.datetime.fromisoformat(value) if value else None
+        return datetime.date.fromisoformat(value) if value else None
 
     # Decimal
 

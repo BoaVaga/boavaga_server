@@ -191,6 +191,12 @@ type EstacioListRes {
     estacionamentos: [Estacionamento!]
 }
 
+type HoraDivergenteRes {
+    success: Boolean!,
+    error: String,
+    horarioDivergente: HorarioDivergente
+}
+
 type SimpleResponse {
     success: Boolean!
     error: String
@@ -252,6 +258,9 @@ type Mutation {
 
     deleteEstacioValorHora(veiculoId: ID!, estacioId: ID): SimpleResponse!
     deleteEstacioHorarioPadrao(dia: String!, estacioId: ID): SimpleResponse!
+
+    setHorarioDivergente(data: Date!, horaAbre: Time!, horaFecha: Time!): HoraDivergenteRes!
+    deleteHorarioDivergente(data: Date!): SimpleResponse!
 }
 
 # --------------

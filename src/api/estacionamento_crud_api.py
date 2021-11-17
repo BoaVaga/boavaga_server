@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 from src.api.base import BaseApi
 from src.classes import ValorHoraInput, FileStream, FlaskFileStream
 from src.container import Container
-from src.models import HorarioPadrao, Endereco, estacionamento
+from src.models import HorarioPadrao, Endereco
 from src.repo import EstacionamentoCrudRepo, RepoContainer
 from src.services import Cached
 
