@@ -2,7 +2,7 @@ from typing import Optional, List
 
 from dependency_injector import providers, containers
 
-from src.services import DbEngine, DbSessionMaker, Crypto, Cached, LocalUploader, ImageProcessor
+from src.services import DbEngine, DbSessionMaker, Crypto, Cached, LocalUploader, ImageProcessor, EmailSender, email_sender
 
 
 def _choose_uploader(uploader_type: str, config: dict):
@@ -49,6 +49,17 @@ class Container(containers.DeclarativeContainer):
     image_processor = providers.Singleton(
         ImageProcessor,
         default_img_format=config.image_processor.def_img_format
+    )
+
+    email_sender = providers.Singleton(
+        EmailSender,
+        host=config.email.host, 
+        port=config.email.port.as_int(), 
+        username=config.email.username, 
+        password=config.email.password, 
+        from_addr=config.email.from_addr, 
+        use_tls=config.email.use_tls.as_int(), 
+        timeout=config.email.timeout.as_int()
     )
 
 

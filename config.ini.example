@@ -25,3 +25,12 @@ limite_tentativas = 3
 # Medidas em km
 distancia = 30
 raio_terra = 6371
+
+[email]
+host = smtp.mailtrap.io
+port = 2525
+username = USERNAME
+password = PASSWORD
+from_addr = <from@example.com>
+use_tls = 1
+timeout = 10
