@@ -1,10 +1,13 @@
+import datetime
 import pathlib
+import re
 import unittest
 from unittest.mock import MagicMock
 
 from src.container import create_container
 from src.enums import UserType
 from src.models import AdminSistema, AdminEstacio
+from src.models.senha_request import SenhaRequest
 from src.repo import AuthRepo
 from src.services import Crypto
 from tests.factories import set_session, AdminSistemaFactory, AdminEstacioFactory
@@ -41,9 +44,11 @@ class TestAuthRepo(unittest.TestCase):
         make_savepoint(self.conn, self.session)
 
         self.crypto = self.container.crypto()
+        self.email_sender = MagicMock()
 
         self.container.cached.override(make_mocked_cached_provider(self.container))
         self.container.crypto.override(singleton_provider(self.crypto))
+        self.container.email_sender.override(singleton_provider(self.email_sender))
 
         self.cached: MockedCached = self.container.cached()
 
@@ -136,6 +141,45 @@ class TestAuthRepo(unittest.TestCase):
         success, token = self.repo.login(self.session, 'jorge@email.com', 'senha123', UserType.SISTEMA)
         self.assertEqual(True, success, f'Success should be True on 1. Error: {token}')
         self.assertNotEqual('1' * 32, token, 'Token should be different')
+
+    def test_enviar_email_senha_ok(self):
+        requests = [
+            (UserType.SISTEMA, 'jorge@email.com', self.admin_sis[0]),
+            (UserType.SISTEMA, 'maria@email.com', self.admin_sis[1]),
+            (UserType.ESTACIONAMENTO, 'jorge@email.com', self.admin_estacio[0]),
+            (UserType.ESTACIONAMENTO, 'joana@email.com', self.admin_estacio[1]),
+        ]
+
+        now = datetime.datetime.now().replace(second=0, microsecond=0)
+
+        for i in range(len(requests)): 
+            tipo, email, user = requests[i]
+            success, error = self.repo.enviar_email_senha(self.session, email, tipo)
+
+            self.assertIsNone(error, f'Error should be None on {i}')
+            self.assertEqual(True, success, f'Success should be True on {i}')
+
+            if tipo == UserType.SISTEMA:
+                fattr, null_attr = SenhaRequest.admin_sistema_fk, 'admin_estacio_fk'
+            else:
+                fattr, null_attr = SenhaRequest.admin_estacio_fk, 'admin_sistema_fk'
+
+            requests = self.session.query(SenhaRequest).filter(fattr == user.id).all()
+            self.assertEqual(1, len(requests), f'Should create exactly one request on {i}')
+
+            request = requests[0]
+            self.assertIsNotNone(request.code, f'Should create a code on {i}')
+            self.assertEqual(16, len(request.code), f'The length of the code should be 16 on {i}')
+            self.assertIsNone(getattr(request, null_attr), f'{null_attr} should be None on {i}')
+            self.assertEqual(now, request.data_cricao, f'Create date should match on {i}')
+
+    def test_enviar_senha_twice(self):
+        # TODO
+        pass
+
+    def test_enviar_senha_user_not_found(self):
+        # TODO
+        pass
 
     def _check_response(self, response, i):
         self.assertEqual(200, response.status_code, 'Should return a 200 OK code')

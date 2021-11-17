@@ -1,4 +1,4 @@
-from typing import Tuple
+from typing import Optional, Tuple
 
 from dependency_injector.wiring import Provide, inject
 from sqlalchemy.orm import Session
@@ -8,6 +8,7 @@ from src.enums import UserType
 from src.models import AdminSistema, AdminEstacio
 from src.classes import UserSession
 from src.services import Crypto, Cached
+from src.services.email_sender import EmailSender
 
 
 class AuthRepo:
@@ -18,9 +19,11 @@ class AuthRepo:
     REVERSE_SESS_TOKEN_GROUP = 'rev_sess_token'
 
     @inject
-    def __init__(self, crypto: Crypto = Provide[Container.crypto], cached: Cached = Provide[Container.cached]):
+    def __init__(self, crypto: Crypto = Provide[Container.crypto], cached: Cached = Provide[Container.cached],
+                 email_sender: EmailSender = Provide[Container.email_sender]):
         self.crypto = crypto
         self.cached = cached
+        self.email_sender = email_sender
 
     def login(self, sess: Session, email: str, senha: str, tipo: UserType) -> Tuple[bool, str]:
         if tipo == UserType.SISTEMA:
@@ -51,6 +54,12 @@ class AuthRepo:
                 return False, self.SENHA_INCORRETA
         else:
             return False, self.EMAIL_NAO_ENCONTRADO
+
+    def enviar_email_senha(self, sess: Session, email: str, tipo: UserType) -> Tuple[bool, Optional[str]]:
+        pass
+
+    def recuperar_senha(self, sess: Session, nova_senha: str, code: str) -> Tuple[bool, Optional[str]]:
+        pass
 
     @staticmethod
     def _gen_reverse_session_key(tipo: UserType, user_id: int) -> str:
