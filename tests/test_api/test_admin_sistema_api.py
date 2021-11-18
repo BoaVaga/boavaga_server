@@ -13,6 +13,7 @@ from src.repo.repo_container import create_repo_container
 from tests.test_api.nodes import Mutation
 from tests.utils import get_adm_sistema_login, make_general_db_setup, make_engine, make_savepoint, general_db_teardown, \
     make_mocked_cached_provider
+from tests.utils.disable_email_sender import disable_email_sender
 
 
 class TestAdminSistemaApi(unittest.TestCase):
@@ -20,6 +21,8 @@ class TestAdminSistemaApi(unittest.TestCase):
     def setUpClass(cls) -> None:
         config_path = str(pathlib.Path(__file__).parents[2] / 'test.ini')
         cls.container = create_container(config_path)
+        disable_email_sender(cls.container)
+        
         cls.repo_container = create_repo_container(config_path)
 
         conn_string = str(cls.container.config.get('db')['conn_string'])

@@ -4,3 +4,4 @@ from tests.utils.get_login import get_adm_sistema_login, get_adm_estacio_login, 
     get_all_admins
 from tests.utils.singleton_provider import singleton_provider
 from tests.utils.convert_to_snake_case import convert_to_snake_case, convert_dct_snake_case
+from tests.utils.disable_email_sender import disable_email_sender

@@ -11,7 +11,7 @@ from src.container import create_container
 from src.repo.repo_container import create_repo_container
 from tests.test_api.nodes import Mutation
 from tests.utils import make_engine, make_mocked_cached_provider, make_general_db_setup, get_adm_estacio_login, \
-    make_savepoint, general_db_teardown
+    make_savepoint, general_db_teardown, disable_email_sender
 
 
 class TestEstacionamentoOthersApi(unittest.TestCase):
@@ -19,6 +19,7 @@ class TestEstacionamentoOthersApi(unittest.TestCase):
     def setUpClass(cls) -> None:
         config_path = str(pathlib.Path(__file__).parents[2] / 'test.ini')
         cls.container = create_container(config_path)
+        disable_email_sender(cls.container)
         cls.repo_container = create_repo_container(config_path)
 
         conn_string = str(cls.container.config.get('db')['conn_string'])

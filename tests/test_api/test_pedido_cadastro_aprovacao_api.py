@@ -15,7 +15,7 @@ from src.utils import time_from_total_seconds
 from tests.factories.factory import EstacionamentoFactory, PedidoCadastroFactory
 from tests.test_api.nodes import Mutation
 from tests.utils import general_db_teardown, make_savepoint, get_adm_sistema_login, make_general_db_setup, \
-    make_mocked_cached_provider, make_engine, convert_dct_snake_case
+    make_mocked_cached_provider, make_engine, convert_dct_snake_case, disable_email_sender
 
 
 class TestAdminSistemaApi(unittest.TestCase):
@@ -23,6 +23,7 @@ class TestAdminSistemaApi(unittest.TestCase):
     def setUpClass(cls) -> None:
         config_path = str(pathlib.Path(__file__).parents[2] / 'test.ini')
         cls.container = create_container(config_path)
+        disable_email_sender(cls.container)
         cls.repo_container = create_repo_container(config_path)
 
         conn_string = str(cls.container.config.get('db')['conn_string'])

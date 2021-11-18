@@ -11,6 +11,7 @@ from src.app import create_app
 from src.container import create_container
 from src.repo.repo_container import create_repo_container
 from tests.test_api.nodes import Mutation, UserTypeNode
+from tests.utils import disable_email_sender
 
 
 class TestAuthApi(unittest.TestCase):
@@ -18,6 +19,7 @@ class TestAuthApi(unittest.TestCase):
     def setUpClass(cls) -> None:
         config_path = str(pathlib.Path(__file__).parents[2] / 'test.ini')
         cls.container = create_container(config_path)
+        disable_email_sender(cls.container)
         cls.repo_container = create_repo_container(config_path)
 
     def setUp(self) -> None:

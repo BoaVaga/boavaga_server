@@ -12,7 +12,7 @@ from src.models import Endereco, PedidoCadastro, AdminEstacio
 from src.repo.repo_container import create_repo_container
 from tests.factories import PedidoCadastroFactory
 from tests.utils import make_engine, make_mocked_cached_provider, make_general_db_setup, get_adm_estacio_login, \
-    make_savepoint, general_db_teardown, convert_dct_snake_case
+    make_savepoint, general_db_teardown, convert_dct_snake_case, disable_email_sender
 
 
 class BaseTestPedidoCadastroApi(unittest.TestCase):
@@ -20,6 +20,7 @@ class BaseTestPedidoCadastroApi(unittest.TestCase):
     def setUpClass(cls) -> None:
         config_path = str(pathlib.Path(__file__).parents[3] / 'test.ini')
         cls.container = create_container(config_path)
+        disable_email_sender(cls.container)
         cls.repo_container = create_repo_container(config_path)
 
         conn_string = str(cls.container.config.get('db')['conn_string'])
