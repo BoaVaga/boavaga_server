@@ -14,7 +14,7 @@ def main():
         config_path = str(cur_dir / 'dev.ini')
 
     app = create_app(create_container(config_path), create_repo_container(config_path))
-    app.run()
+    app.run(host='0.0.0.0')
 
 
 if __name__ == '__main__':
