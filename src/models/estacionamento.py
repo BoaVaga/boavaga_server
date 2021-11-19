@@ -18,7 +18,7 @@ class Estacionamento(Base):
     total_vaga = Column(SmallInteger(), nullable=False)
     horap_fk = Column(SmallInteger(), ForeignKey('horario_padrao.id'), nullable=False)
     endereco_fk = Column(SmallInteger(), ForeignKey('endereco.id'), nullable=False)
-    foto_fk = Column(SmallInteger(), ForeignKey('upload.id'), nullable=False)
+    foto_fk = Column(SmallInteger(), ForeignKey('upload.id'), nullable=True)
 
     horario_padrao = relationship('HorarioPadrao', back_populates='estacionamento')
     endereco = relationship('Endereco')

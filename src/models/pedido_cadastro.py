@@ -15,7 +15,7 @@ class PedidoCadastro(Base):
     msg_rejeicao = Column(Text(), nullable=True)
     num_rejeicoes = Column(SmallInteger(), nullable=False, default=0)
     endereco_fk = Column(SmallInteger(), ForeignKey('endereco.id'), nullable=False)
-    foto_fk = Column(SmallInteger(), ForeignKey('upload.id'), nullable=False)
+    foto_fk = Column(SmallInteger(), ForeignKey('upload.id'), nullable=True)
     admin_estacio_fk = Column(SmallInteger(), ForeignKey('admin_estacio.id'), nullable=False)
 
     endereco = relationship('Endereco')

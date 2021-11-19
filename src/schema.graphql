@@ -236,7 +236,7 @@ type Mutation {
 
     login(email: String!, senha: String!, tipo: UserType!): LoginRes!
 
-    createPedidoCadastro(nome: String!, telefone: String!, endereco: EnderecoInput!, foto: Upload!): PedidoCadastroRes!
+    createPedidoCadastro(nome: String!, telefone: String!, endereco: EnderecoInput!, foto: Upload): PedidoCadastroRes!
 
     editPedidoCadastro(nome: String, telefone: String, endereco: EnderecoInput, foto: Upload): PedidoCadastroRes!
 

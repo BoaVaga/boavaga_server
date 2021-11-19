@@ -36,7 +36,7 @@ class PedidoCadastroApi(BaseApi):
         super().__init__(queries, mutations)
 
     @convert_kwargs_to_snake_case
-    def create_resolver(self, _, info, nome: str, telefone: str, endereco: dict, foto: FileStorage):
+    def create_resolver(self, _, info, nome: str, telefone: str, endereco: dict, foto: Optional[FileStorage] = None):
         sess: Session = flask.g.session
         user_sess = self.get_user_session(sess, self.cached, info)
 
@@ -49,7 +49,7 @@ class PedidoCadastroApi(BaseApi):
             return {'success': False, 'error': val_res}
 
         try:
-            fstream = FlaskFileStream(foto)
+            fstream = FlaskFileStream(foto) if foto is not None else None
             success, error_or_pedido = self.pedido_cad_crud_repo.create(user_sess, sess, nome, telefone, end, fstream)
         except Exception as ex:
             logging.getLogger(__name__).error('Error on create_resolver', exc_info=ex)

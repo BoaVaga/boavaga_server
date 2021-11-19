@@ -100,6 +100,11 @@ class TestPedidoCadastroAprovacaoRepo(unittest.TestCase):
         db_adm_estacio = self.session.query(AdminEstacio).get(adm_estacio.id)
         self.assertEqual(adm_estacio, db_adm_estacio, 'Admins estacio should match on db level')
 
+    def test_accept_ok_no_foto(self):
+        self.pedidos[0].foto_fk = self.pedidos[0].foto = None
+
+        self.test_accept_ok()
+
     def test_accept_no_permission(self):
         _sessions = [self.adm_estacio_sess, None]
         for i in range(len(_sessions)):

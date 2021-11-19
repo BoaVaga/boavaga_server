@@ -46,7 +46,7 @@ class PedidoCadastroCrudRepo:
         self.limite_tentativas = limite_tentativas
 
     def create(self, user_sess: UserSession, sess: Session, nome: str, telefone: str,
-               endereco: Endereco, foto: FileStream) -> Tuple[bool, Union[str, PedidoCadastro]]:
+               endereco: Endereco, foto: Optional[FileStream] = None) -> Tuple[bool, Union[str, PedidoCadastro]]:
         if user_sess is None or user_sess.tipo != UserType.ESTACIONAMENTO:
             return False, self.ERRO_SEM_PERMISSAO
 
@@ -65,9 +65,12 @@ class PedidoCadastroCrudRepo:
         if _val_tel:
             return False, _val_tel
 
-        success_upload, upload_or_error = self._process_and_upload(foto, 'create()')
-        if not success_upload:
-            return False, upload_or_error
+        if foto is not None:
+            success_upload, upload_or_error = self._process_and_upload(foto, 'create()')
+            if not success_upload:
+                return False, upload_or_error
+        else:
+            upload_or_error = None
 
         pedido = PedidoCadastro(nome=nome, telefone=telefone, endereco=endereco, foto=upload_or_error,
                                 admin_estacio=user_sess.user)

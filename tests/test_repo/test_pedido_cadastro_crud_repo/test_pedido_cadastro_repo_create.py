@@ -26,7 +26,9 @@ class TestPedidoCadastroCrudRepoCreate(BaseTestPedidoCadastroCrudRepo):
             (Arg(_u[3][1], '  Teste   Nome' + ' '*100, self.telefone, self.endereco, self.fstream),
              Ret(_u[3][0], 'Teste   Nome', None, self.fstream, self.ret_fstream, self.upload)),
             (Arg(_u[4][1], self.nome, '   +5512345678901' + ' '*100, self.endereco, self.fstream),
-             Ret(_u[4][0], None, '+5512345678901', self.fstream, self.ret_fstream, self.upload))
+             Ret(_u[4][0], None, '+5512345678901', self.fstream, self.ret_fstream, self.upload)),
+            (Arg(_u[5][1], self.nome, self.telefone, self.endereco, None),
+             Ret(_u[5][0], None, None, None, None, None))
         ]
 
         for i in range(len(datas)):
@@ -43,10 +45,20 @@ class TestPedidoCadastroCrudRepoCreate(BaseTestPedidoCadastroCrudRepo):
             self.assertEqual(0, obj.num_rejeicoes, f'Num rejeicoes should start with 0 on {i}')
             self.assertIsNone(obj.msg_rejeicao, f'Msg rejeicao should be null on {i}')
 
-            self.image_processor.compress.assert_called_once_with(ret.img_proc_call, 100, 100)
-            self.uploader.upload.assert_called_once_with(ret.upload_call, 'foto_estacio', ANY)
+            if ret.img_proc_call is not None:
+                self.image_processor.compress.assert_called_once_with(ret.img_proc_call, 100, 100)
+            else:
+                self.image_processor.compress.assert_not_called()
 
-            self.assertEqual(ret.foto, obj.foto, f'Foto should be the upload on on {i}')
+            if ret.upload_call is not None:
+                self.uploader.upload.assert_called_once_with(ret.upload_call, 'foto_estacio', ANY)
+            else:
+                self.uploader.upload.assert_not_called()
+
+            if ret.foto is not None:
+                self.assertEqual(ret.foto, obj.foto, f'Foto should be the upload on on {i}')
+            else:
+                self.assertIsNone(obj.foto, f'Foto should be None on {i}')
 
             self.assertEqual(self.session.query(PedidoCadastro).get(obj.id), obj,
                              f'Should add the obj to the session on {i}')
