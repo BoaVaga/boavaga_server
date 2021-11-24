@@ -1,4 +1,4 @@
-from datetime import time
+from datetime import datetime, time
 from decimal import Decimal
 from random import randint, choice
 from uuid import uuid4
@@ -12,6 +12,7 @@ from src.classes import ValorHoraInput
 from src.enums import EstadosEnum, UploadStatus
 from src.models import AdminSistema, AdminEstacio, Endereco, Upload, PedidoCadastro, Estacionamento, HorarioPadrao, \
     ValorHora, Veiculo, HorarioDivergente
+from src.models.senha_request import SenhaRequest
 from src.services import Crypto
 from src.utils import random_string
 
@@ -91,6 +92,11 @@ def _call_faker_prov(provider, **kwargs):
 
 def str_uuid4():
     return str(uuid4())
+
+
+def _random_senha_token(x):
+    n = str(x)
+    return random_string(7 - len(n)) + '/' + n
 
 
 class ValorHoraInputFactory(factory.Factory):
@@ -227,6 +233,18 @@ class HorarioDivergenteFactory(factory.alchemy.SQLAlchemyModelFactory):
         sqlalchemy_session_persistence = None
 
 
+class SenhaRequestFactory(factory.alchemy.SQLAlchemyModelFactory):
+    id = factory.Sequence(lambda x: x + 1)
+    code = factory.Sequence(_random_senha_token)
+    admin_sistema = None
+    admin_estacio = None
+    data_criacao = factory.LazyFunction(datetime.now)
+
+    class Meta:
+        model = SenhaRequest
+        sqlalchemy_session_persistence = None
+
+
 class EstacionamentoFactory(factory.alchemy.SQLAlchemyModelFactory):
     id = factory.Sequence(lambda x: x + 1)
     nome = factory.Faker('name')
@@ -273,7 +291,7 @@ class EstacionamentoFactory(factory.alchemy.SQLAlchemyModelFactory):
 
 _ALL_FACTORIES = (AdminSistemaFactory, AdminEstacioFactory, UploadFactory, EnderecoFactory, PedidoCadastroFactory,
                   EstacionamentoFactory, HorarioPadraoFactory, ValorHoraFactory, VeiculoFactory,
-                  HorarioDivergenteFactory)
+                  HorarioDivergenteFactory, SenhaRequestFactory)
 
 
 def set_session(session):

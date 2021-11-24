@@ -2,15 +2,16 @@ import datetime
 import pathlib
 import re
 import unittest
-from unittest.mock import MagicMock
+from unittest.mock import ANY, MagicMock
 
 from src.container import create_container
 from src.enums import UserType
-from src.models import AdminSistema, AdminEstacio
+from src.models import AdminSistema, AdminEstacio, admin_sistema
 from src.models.senha_request import SenhaRequest
 from src.repo import AuthRepo
 from src.services import Crypto
 from tests.factories import set_session, AdminSistemaFactory, AdminEstacioFactory
+from tests.factories.factory import SenhaRequestFactory
 from tests.utils import make_general_db_setup, general_db_teardown, MockedCached, \
     make_mocked_cached_provider, make_engine, make_savepoint, singleton_provider
 
@@ -45,6 +46,7 @@ class TestAuthRepo(unittest.TestCase):
 
         self.crypto = self.container.crypto()
         self.email_sender = MagicMock()
+        self.email_sender.send_email_simple.return_value = True
 
         self.container.cached.override(make_mocked_cached_provider(self.container))
         self.container.crypto.override(singleton_provider(self.crypto))
@@ -143,7 +145,7 @@ class TestAuthRepo(unittest.TestCase):
         self.assertNotEqual('1' * 32, token, 'Token should be different')
 
     def test_enviar_email_senha_ok(self):
-        requests = [
+        base_requests = [
             (UserType.SISTEMA, 'jorge@email.com', self.admin_sis[0]),
             (UserType.SISTEMA, 'maria@email.com', self.admin_sis[1]),
             (UserType.ESTACIONAMENTO, 'jorge@email.com', self.admin_estacio[0]),
@@ -152,8 +154,8 @@ class TestAuthRepo(unittest.TestCase):
 
         now = datetime.datetime.now().replace(second=0, microsecond=0)
 
-        for i in range(len(requests)): 
-            tipo, email, user = requests[i]
+        for i in range(len(base_requests)): 
+            tipo, email, user = base_requests[i]
             success, error = self.repo.enviar_email_senha(self.session, email, tipo)
 
             self.assertIsNone(error, f'Error should be None on {i}')
@@ -169,17 +171,75 @@ class TestAuthRepo(unittest.TestCase):
 
             request = requests[0]
             self.assertIsNotNone(request.code, f'Should create a code on {i}')
-            self.assertEqual(16, len(request.code), f'The length of the code should be 16 on {i}')
+            self.assertEqual(8, len(request.code), f'The length of the code should be 16 on {i}')
             self.assertIsNone(getattr(request, null_attr), f'{null_attr} should be None on {i}')
-            self.assertEqual(now, request.data_cricao, f'Create date should match on {i}')
+
+            self.assertEqual(now, request.data_criacao.replace(second=0, microsecond=0), f'Create date should match on {i}')
+
+            self.email_sender.send_email_simple.assert_called_once_with(email, ANY, message_text=ANY, message_html=ANY)
+            self.email_sender.reset_mock()
 
     def test_enviar_senha_twice(self):
-        # TODO
-        pass
+        tipo, email, user = UserType.SISTEMA, 'jorge@email.com', self.admin_sis[0]
+        req = SenhaRequestFactory.create(admin_sistema=user)
+
+        success, error = self.repo.enviar_email_senha(self.session, email, tipo)
+        self.assertEqual(True, success, f'Success should be True')
+        self.assertIsNone(error, 'Error should be None')
+
+        requests = self.session.query(SenhaRequest).filter(SenhaRequest.admin_sistema_fk == user.id).all()
+        self.assertEqual(1, len(requests), f'Should not create one more request')
+
+        self.assertEqual(req, requests[0], 'Should not change anything about the request')
+        self.email_sender.send_email_simple.assert_called_once_with(email, ANY, message_text=ANY, message_html=ANY)
 
     def test_enviar_senha_user_not_found(self):
-        # TODO
-        pass
+        success, error = self.repo.enviar_email_senha(self.session, 'maria@email.com', UserType.ESTACIONAMENTO)
+        
+        self.assertEqual('email_nao_encontrado', error, 'Error should be "usuario_nao_encontrado"')
+        self.assertEqual(False, success, 'Success should be False')
+
+    def test_enviar_senha_erro_envio_email(self):
+        user = self.admin_sis[0]
+        self.email_sender.send_email_simple.side_effect = Exception('Random Exception')
+
+        success, error = self.repo.enviar_email_senha(self.session, 'jorge@email.com', UserType.SISTEMA)
+        self.assertEqual('erro_envio_email', error, 'Error should be "erro_envio_email"')
+        self.assertEqual(False, success, 'Success should be False')
+
+        requests = self.session.query(SenhaRequest).filter(SenhaRequest.admin_sistema_fk == user.id).all()
+        self.assertEqual(0, len(requests), f'Should not create any request')
+
+    def test_enviar_senha_erro_envio_email_2(self):
+        user = self.admin_sis[0]
+        self.email_sender.send_email_simple.return_value = False
+
+        success, error = self.repo.enviar_email_senha(self.session, 'jorge@email.com', UserType.SISTEMA)
+        self.assertEqual('erro_envio_email', error, 'Error should be "erro_envio_email"')
+        self.assertEqual(False, success, 'Success should be False')
+
+        requests = self.session.query(SenhaRequest).filter(SenhaRequest.admin_sistema_fk == user.id).all()
+        self.assertEqual(0, len(requests), f'Should not create any request')
+
+    def test_recuperar_senha_ok(self):
+        user, senha = self.admin_sis[0], 'Novasenha'
+        req = SenhaRequestFactory.create(admin_sistema=user)
+        ori_req_id = int(req.id)
+
+        success, error = self.repo.recuperar_senha(self.session, senha, req.code)
+        self.assertEqual(True, success, f'Success should be True. Error: {error}')
+        self.assertIsNone(error, 'Error should be None')
+
+        instance = self.session.query(SenhaRequest).get(ori_req_id)
+        self.assertIsNone(instance, 'Should delete the request from the db')
+        
+        self.assertEqual(True, self.crypto.check_password(senha.encode('utf8'), user.senha), 'Should change the password')
+
+    def test_recuperar_senha_codigo_invalido(self):
+        success, error = self.repo.recuperar_senha(self.session, 'abcv', 'asdsad')
+
+        self.assertEqual('codigo_invalido', error, 'Error should be "codigo_invalido"')
+        self.assertEqual(False, success, 'Success should be False')
 
     def _check_response(self, response, i):
         self.assertEqual(200, response.status_code, 'Should return a 200 OK code')

@@ -261,6 +261,9 @@ type Mutation {
 
     setHorarioDivergente(data: Date!, horaAbre: Time!, horaFecha: Time!): HoraDivergenteRes!
     deleteHorarioDivergente(data: Date!): SimpleResponse!
+
+    enviarEmailSenha(email: String!, tipo: UserType!): SimpleResponse!
+    recuperarSenha(code: String!, novaSenha: String!): SimpleResponse!
 }
 
 # --------------
