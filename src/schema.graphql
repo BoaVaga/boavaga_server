@@ -40,6 +40,7 @@ type AdminEstacio {
     id: ID!,
     email: String!
     adminMestre: Boolean!
+    estacionamento: Estacionamento
 }
 
 type PedidoCadastro {
@@ -233,6 +234,13 @@ type VeiculoListRes {
     veiculos: [Veiculo]
 }
 
+type GetUserRes {
+    logado: Boolean!,
+    tipo: UserType,
+    adminEstacio: AdminEstacio,
+    adminSistema: AdminSistema
+}
+
 # -----------------
 # --- Mutation ----
 # -----------------
@@ -280,6 +288,8 @@ type Mutation {
 # --------------
 
 type Query {
+    getUser: GetUserRes!
+
     getPedidoCadastro(pedidoId: ID): PedidoCadastroRes!
 
     listPedidoCadastro(amount: Int, index: Int): PedidoCadastroResList!

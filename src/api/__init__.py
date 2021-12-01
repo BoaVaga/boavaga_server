@@ -4,6 +4,7 @@ from src.api.auth_api import AuthApi
 from src.api.buscar_estacio_api import BuscarEstacioApi
 from src.api.estacionamento_crud_api import EstacionamentoCrudApi
 from src.api.estacionamento_others_api import EstacionamentoOthersApi
+from src.api.get_user_info_api import GetUserInfoApi
 from src.api.pedido_cadastro_api import PedidoCadastroApi
 from src.api.pedido_cadastro_aprovacao_api import PedidoCadastroAprovacaoApi
 from src.api.veiculo_crud_api import VeiculoCrudApi
@@ -19,5 +20,6 @@ APIS = (
     EstacionamentoOthersApi,
     BuscarEstacioApi,
     VeiculoCrudApi,
-    HorarioDivergenteApi
+    HorarioDivergenteApi,
+    GetUserInfoApi
 )
