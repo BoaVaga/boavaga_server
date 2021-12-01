@@ -75,12 +75,11 @@ class TestAdminEstacioRepo(unittest.TestCase):
             ('fernanda@email.com', 'fernanda12'),
             ('mariana@email.com', 'mariana12'),
         ]
-        expect_estacio_id = int(self.estacios[0].id)
 
         for i in range(len(requests)):
             email, senha = requests[i]
 
-            success, error_or_admin = self.repo.create_admin(self.valid_user_sess, self.session, email, senha)
+            success, error_or_admin = self.repo.create_admin(self.session, email, senha)
             self.assertEqual(True, success, f'Success should be True on {i}. Error: {error_or_admin}')
             self.assertIsNotNone(error_or_admin, f'Admin should not be null on {i}')
 
@@ -88,7 +87,6 @@ class TestAdminEstacioRepo(unittest.TestCase):
             self.assertEqual(True, self.crypto.check_password(senha.encode('utf8'), error_or_admin.senha),
                              f'Senha does not match on {i}')
 
-            self.assertEqual(expect_estacio_id, error_or_admin.estacio_fk, f'Estacio fk should match on {i}')
             self.assertEqual(False, error_or_admin.admin_mestre, f'Admin mestre should be False on {i}')
 
     def test_create_email_already_exists(self):
@@ -99,19 +97,9 @@ class TestAdminEstacioRepo(unittest.TestCase):
         for i in range(len(requests)):
             email, senha = requests[i]
 
-            success, error = self.repo.create_admin(self.valid_user_sess, self.session, email, senha)
+            success, error = self.repo.create_admin(self.session, email, senha)
 
             self.assertEqual('email_ja_cadastrado', error, f'Error should be "email_ja_cadastrado" on {i}')
-            self.assertEqual(False, success, f'Success should be False on {i}')
-
-    def test_create_invalid_permission(self):
-        email, senha = 'jorge12@email.com', 'matheus12'
-
-        sessions = [self.not_master_user_sess, self.invalid_user_sess, UserSession(UserType.SISTEMA, 1), None]
-        for i in range(len(sessions)):
-            success, error = self.repo.create_admin(sessions[i], self.session, email, senha)
-
-            self.assertEqual('sem_permissao', error, f'Error should be "sem_permissao" on {i}')
             self.assertEqual(False, success, f'Success should be False on {i}')
 
     def _check_response(self, response, i):

@@ -19,19 +19,11 @@ class AdminEstacioRepo:
     def __init__(self, crypto: Crypto = Provide[Container.crypto]):
         self.crypto = crypto
 
-    def create_admin(self, user_sess: UserSession, sess: Session, email: str, senha: str)\
+    def create_admin(self, sess: Session, email: str, senha: str)\
             -> Tuple[bool, Union[str, AdminEstacio]]:
         try:
-            if user_sess is None or user_sess.tipo != UserType.ESTACIONAMENTO:
-                return False, self.SEM_PERMISSAO
-
-            adm = user_sess.user
-            estacio_fk = adm.estacio_fk
-            if adm.admin_mestre is False or estacio_fk is None:
-                return False, self.SEM_PERMISSAO
-
             hash_senha = self.crypto.hash_password(senha.encode('utf8'))
-            admin = AdminEstacio(email=email, senha=hash_senha, estacio_fk=estacio_fk)
+            admin = AdminEstacio(email=email, senha=hash_senha, admin_mestre=False)
             sess.add(admin)
             sess.commit()
 
