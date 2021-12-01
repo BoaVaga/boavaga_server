@@ -34,11 +34,7 @@ class TestAdminEstacioRepo(unittest.TestCase):
 
         self.estacios = EstacionamentoFactory.create_batch(5)
 
-        self.admin_estacio = [
-            AdminEstacioFactory.create(email='jorge@email.com', senha=senha, admin_mestre=True, estacionamento=self.estacios[0]),
-            AdminEstacioFactory.create(email='maria@email.com', senha=senha, admin_mestre=False, estacionamento=self.estacios[0]),
-            AdminEstacioFactory.create(email='zeruela@email.com', senha=senha)
-        ]
+        self.admin_estacio = AdminEstacioFactory.create_batch(10)
         self.session.commit()
 
         make_savepoint(self.conn, self.session)
@@ -49,7 +45,7 @@ class TestAdminEstacioRepo(unittest.TestCase):
         a.admin_mestre = True
 
         b, self.not_master_user_sess = get_adm_estacio(self.crypto, self.session, n=5742)
-        b.estacionamento = self.estacios[0]
+        b.estacionamento = self.estacios[1]
         b.admin_mestre = False
 
         c, self.invalid_user_sess = get_adm_estacio(self.crypto, self.session, n=5743)
@@ -91,7 +87,7 @@ class TestAdminEstacioRepo(unittest.TestCase):
 
     def test_create_email_already_exists(self):
         requests = [
-            ('jorge@email.com', 'senha123'),
+            (self.admin_estacio[0].email, 'senha123'),
         ]
 
         for i in range(len(requests)):
@@ -101,6 +97,42 @@ class TestAdminEstacioRepo(unittest.TestCase):
 
             self.assertEqual('email_ja_cadastrado', error, f'Error should be "email_ja_cadastrado" on {i}')
             self.assertEqual(False, success, f'Success should be False on {i}')
+
+    def test_add_to_estacio_ok(self):
+        expect_estacio_id = int(self.estacios[0].id)
+
+        for i in range(5):
+            adm = self.admin_estacio[i]
+
+            success, error = self.repo.add_to_estacio(self.valid_user_sess, self.session, adm.email)
+            self.assertEqual(True, success, f'Success should be True on {i}. Error: {error}')
+            self.assertIsNone(error, f'Error should be null on {i}')
+
+            self.assertEqual(expect_estacio_id, adm.estacio_fk, f'Estacio fk should match on {i}')
+            self.assertEqual(False, adm.admin_mestre, f'Admin mestre should be False on {i}')
+
+    def test_add_invalid_permission(self):
+        email = 'jorge12@email.com'
+
+        sessions = [self.not_master_user_sess, self.invalid_user_sess, UserSession(UserType.SISTEMA, 1), None]
+        for i in range(len(sessions)):
+            success, error = self.repo.add_to_estacio(sessions[i], self.session, email)
+
+            self.assertEqual('sem_permissao', error, f'Error should be "sem_permissao" on {i}')
+            self.assertEqual(False, success, f'Success should be False on {i}')
+
+    def test_add_email_not_found(self):
+        success, error = self.repo.add_to_estacio(self.valid_user_sess, self.session, 'asdjhasdu@adaszds')
+
+        self.assertEqual('email_not_found', error, f'Error should be "email_not_found"')
+        self.assertEqual(False, success, 'Success should be False')
+
+    def test_add_adm_already_assigned(self):
+        email = self.admin_estacio[-2].email
+        success, error = self.repo.add_to_estacio(self.valid_user_sess, self.session, email)
+
+        self.assertEqual('admin_already_assigned', error, 'Error should be "admin_already_assigned"')
+        self.assertEqual(False, success, 'Success should be False')
 
     def _check_response(self, response, i):
         self.assertEqual(200, response.status_code, 'Should return a 200 OK code')

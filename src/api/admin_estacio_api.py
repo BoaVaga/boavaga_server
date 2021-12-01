@@ -22,7 +22,8 @@ class AdminEstacioApi(BaseApi):
 
         queries = {}
         mutations = {
-            'createAdminEstacio': self.create_admin_resolver
+            'createAdminEstacio': self.create_admin_resolver,
+            'addAdminToEstacio': self.add_to_estacio_resolver
         }
 
         super().__init__(queries, mutations)
@@ -30,10 +31,9 @@ class AdminEstacioApi(BaseApi):
     @convert_kwargs_to_snake_case
     def create_admin_resolver(self, _, info, email: str, senha: str):
         sess: Session = flask.g.session
-        user_sess = self.get_user_session(sess, self.cached, info)
 
         try:
-            success, error_or_admin = self.repo.create_admin(user_sess, sess, email, senha)
+            success, error_or_admin = self.repo.create_admin(sess, email, senha)
         except Exception as ex:
             logging.getLogger(__name__).error('Error on create_admin_resolver', exc_info=ex)
             success, error_or_admin = False, self.ERRO_DESCONHECIDO
@@ -50,3 +50,19 @@ class AdminEstacioApi(BaseApi):
             }
 
         return payload
+
+    @convert_kwargs_to_snake_case
+    def add_to_estacio_resolver(self, _, info, email: str):
+        sess: Session = flask.g.session
+        user_sess = self.get_user_session(sess, self.cached, info)
+
+        try:
+            success, error = self.repo.add_to_estacio(user_sess, sess, email)
+        except Exception as ex:
+            logging.getLogger(__name__).error('Error on add_to_estacio_resolver', exc_info=ex)
+            success, error = False, self.ERRO_DESCONHECIDO
+
+        return {
+            'success': success,
+            'error': error
+        }

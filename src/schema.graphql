@@ -239,7 +239,9 @@ type VeiculoListRes {
 
 type Mutation {
     createAdminSistema(nome: String!, email: String!, senha: String!): BaseAdminSistemaRes!
+
     createAdminEstacio(email: String!, senha: String!): BaseAdminEstacioRes!
+    addAdminToEstacio(email: String!): SimpleResponse!
 
     login(email: String!, senha: String!, tipo: UserType!): LoginRes!
 
