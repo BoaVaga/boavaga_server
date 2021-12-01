@@ -161,6 +161,12 @@ type BaseAdminSistemaRes {
     adminSistema: AdminSistema
 }
 
+type BaseAdminEstacioRes {
+    success: Boolean!,
+    error: String,
+    adminEstacio: AdminEstacio
+}
+
 type LoginRes {
     success: Boolean!,
     error: String,
@@ -233,6 +239,7 @@ type VeiculoListRes {
 
 type Mutation {
     createAdminSistema(nome: String!, email: String!, senha: String!): BaseAdminSistemaRes!
+    createAdminEstacio(email: String!, senha: String!): BaseAdminEstacioRes!
 
     login(email: String!, senha: String!, tipo: UserType!): LoginRes!
 

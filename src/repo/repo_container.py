@@ -2,6 +2,7 @@ from typing import Optional, List
 
 from dependency_injector import containers, providers
 
+from src.repo.admin_estacio_repo import AdminEstacioRepo
 from src.repo.buscar_estacio_repo import BuscarEstacioRepo
 from src.repo.estacionamento_others_repo import EstacionamentoOthersRepo
 from src.repo.estacionamento_crud_repo import EstacionamentoCrudRepo
@@ -37,6 +38,7 @@ class RepoContainer(containers.DeclarativeContainer):
     )
     veiculo_crud_repo = providers.Factory(VeiculoCrudRepo)
     horario_divergente_repo = providers.Factory(HorarioDivergenteRepo)
+    admin_estacio_repo = providers.Factory(AdminEstacioRepo)
 
 
 def create_repo_container(config_filepath: str, extra_modules: Optional[List] = None):

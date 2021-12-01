@@ -1,3 +1,4 @@
+from src.api.admin_estacio_api import AdminEstacioApi
 from src.api.admin_sistema_api import AdminSistemaApi
 from src.api.auth_api import AuthApi
 from src.api.buscar_estacio_api import BuscarEstacioApi
@@ -10,6 +11,7 @@ from src.api.horario_divergente_api import HorarioDivergenteApi
 
 APIS = (
     AdminSistemaApi,
+    AdminEstacioApi,
     AuthApi,
     PedidoCadastroApi,
     PedidoCadastroAprovacaoApi,
