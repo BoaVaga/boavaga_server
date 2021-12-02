@@ -144,7 +144,9 @@ class PedidoCadastroCrudRepo:
         if index < 0:
             return True, tuple()
 
-        query = sess.query(PedidoCadastro).offset(index)
+        query = sess.query(PedidoCadastro).filter(
+            PedidoCadastro.msg_rejeicao == None
+        ).offset(index)
 
         if amount > 0:
             query = query.limit(amount)

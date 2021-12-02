@@ -50,7 +50,7 @@ type PedidoCadastro {
     msgRejeicao: String,
     numRejeicoes: Int!,
     endereco: Endereco!,
-    foto: String!,
+    foto: String,
     adminEstacio: AdminEstacio
 }
 
@@ -89,7 +89,7 @@ type Estacionamento {
     nome: String!,
     telefone: String!,
     endereco: Endereco!,
-    foto: String!,
+    foto: String,
     estaSuspenso: Boolean!,
     estaAberto: Boolean!,
     cadastroTerminado: Boolean!,
