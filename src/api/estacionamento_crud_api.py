@@ -66,6 +66,7 @@ class EstacionamentoCrudApi(BaseApi):
                 'error': error_or_estacio
             }
 
+    @convert_kwargs_to_snake_case
     def edit_estacionamento_resolver(
         self, _, info, 
         nome: Optional[str] = None,
